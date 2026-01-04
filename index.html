@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bellbrook Bridge Watch</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body { font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 10px; background: #eef2f5; }
         .banner { padding: 20px; border-radius: 12px; margin-bottom: 10px; text-align: center; font-weight: bold; color: white; font-size: 1.4rem; }
@@ -11,10 +12,9 @@
         .label { font-size: 0.8rem; color: #666; font-weight: bold; text-transform: uppercase; }
         .val { font-size: 2.5rem; font-weight: 900; display: block; margin: 5px 0; }
         .bg-safe { background: #27ae60; } .bg-warn { background: #f39c12; } .bg-danger { background: #c0392b; }
-        /* Adjusted the camera container for the iframe */
-        .cam-container { width: 100%; height: 450px; border-radius: 12px; overflow: hidden; border: 1px solid #ccc; margin-top: 10px; }
-        iframe.cam-frame { width: 100%; height: 100%; border: none; }
+        .btn { display: block; width: 100%; padding: 15px; background: #34495e; color: white; text-align: center; text-decoration: none; border-radius: 12px; font-weight: bold; margin-top: 10px; }
         .footer-note { text-align: center; font-size: 0.7rem; color: #888; margin-top: 10px; }
+        canvas { width: 100% !important; height: 200px !important; }
     </style>
 </head>
 <body>
@@ -34,10 +34,14 @@
     </div>
 
     <div class="card">
+        <div class="label">5-Day Height Trend</div>
+        <canvas id="heightChart"></canvas>
+    </div>
+
+    <div class="card">
         <div class="label">Live Gauge Camera</div>
-        <div class="cam-container">
-            <iframe class="cam-frame" src="https://macleay.nsw.gov.au/My-community/Webcams/Bellbrook"></iframe>
-        </div>
+        <p style="font-size: 0.8rem; color: #666;">External feed (opens in new window)</p>
+        <a href="https://macleay.nsw.gov.au/My-community/Webcams/Bellbrook" target="_blank" class="btn">📸 OPEN BELLBROOK WEBCAM</a>
     </div>
 
     <div class="footer-note">Data auto-refreshes every 5 minutes. Source: BOM/Council CSV.</div>
@@ -45,30 +49,69 @@
     <script>
         const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRohfSEJSpuwFQNvpmrmnS0jfADxdhZ218WSZPfwXiUZHWNL0UWHSHKoJdtwZ89tRNwAjMiYc_GOGd2/pub?gid=0&single=true&output=csv";
         const DECK = 2.80;
+        let chart;
+
+        // Initialize Chart
+        function initChart() {
+            const ctx = document.getElementById('heightChart').getContext('2d');
+            chart = new Chart(ctx, {
+                type: 'line',
+                data: { labels: [], datasets: [{ label: 'Height (m)', data: [], borderColor: '#3498db', fill: true, backgroundColor: 'rgba(52, 152, 219, 0.1)', tension: 0.3 }] },
+                options: { responsive: true, scales: { y: { beginAtZero: false } } }
+            });
+            loadHistory();
+        }
+
+        // Save data to local storage (5 day limit)
+        function saveHistory(height, time) {
+            let history = JSON.parse(localStorage.getItem('flood_history') || '[]');
+            // Don't add duplicate times
+            if (history.length > 0 && history[history.length - 1].time === time) return;
+            
+            history.push({ height, time });
+            
+            // Keep roughly 5 days of data (assuming 5-min updates = 1440 entries)
+            if (history.length > 1440) history.shift();
+            
+            localStorage.setItem('flood_history', JSON.stringify(history));
+            updateChart(history);
+        }
+
+        function loadHistory() {
+            let history = JSON.parse(localStorage.getItem('flood_history') || '[]');
+            updateChart(history);
+        }
+
+        function updateChart(history) {
+            chart.data.labels = history.map(h => h.time);
+            chart.data.datasets[0].data = history.map(h => h.height);
+            chart.update();
+        }
 
         async function update() {
             try {
                 const res = await fetch(CSV_URL + "&cache=" + Date.now());
                 const text = await res.text();
-                
                 let raw = text.split(",");
                 let d = raw.map(item => item.replace(/"/g, "").trim());
 
                 const bh = parseFloat(d[0]); 
                 const bt = d[2];             
-                
+                const timeStr = d[1];
+
                 if (!isNaN(bh)) {
                     const cl = DECK - bh;
                     document.getElementById("clearance").innerText = cl.toFixed(2) + "m";
                     document.getElementById("b-height").innerText = bh.toFixed(2) + "m";
                     document.getElementById("b-trend").innerText = bt;
-                }
-                
-                const obsDate = new Date(d[1]);
-                if (!isNaN(obsDate.getTime())) {
-                    document.getElementById("time").innerText = "Last Obs: " + obsDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-                } else {
-                    document.getElementById("time").innerText = "Last Obs: " + d[1]; 
+                    
+                    // Format time for the label and chart
+                    const obsDate = new Date(timeStr);
+                    const labelTime = !isNaN(obsDate.getTime()) ? obsDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : timeStr;
+                    document.getElementById("time").innerText = "Last Obs: " + labelTime;
+                    
+                    // Save to chart history
+                    saveHistory(bh, labelTime);
                 }
 
                 const banner = document.getElementById("status-banner");
@@ -85,10 +128,10 @@
 
             } catch (e) { 
                 console.error("Data error", e); 
-                document.getElementById("status-banner").innerText = "OFFLINE: CHECKING DATA...";
             }
         }
 
+        initChart();
         update();
         setInterval(update, 300000); 
     </script>
