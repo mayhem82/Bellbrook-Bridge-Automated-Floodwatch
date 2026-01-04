@@ -12,17 +12,19 @@
         .label { font-size: 0.8rem; color: #666; font-weight: bold; text-transform: uppercase; margin-bottom: 5px; }
         .bg-safe { background: #27ae60; } .bg-warn { background: #f39c12; } .bg-danger { background: #c0392b; }
         
-        .btn-report { display: block; width: 100%; padding: 18px; background: #007bff; color: white; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; font-size: 1.1rem; box-shadow: 0 4px 0 #0056b3; margin-bottom: 10px; }
+        /* Report Button */
+        .btn-report { display: block; width: 100%; padding: 18px; background: #007bff; color: white; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; font-size: 1.1rem; box-shadow: 0 4px 0 #0056b3; margin-bottom: 10px; transition: all 0.1s; }
         .btn-report:active { transform: translateY(2px); box-shadow: 0 2px 0 #0056b3; }
         
+        /* Layout Grids */
         .link-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         .btn-link { display: block; padding: 12px; background: #f8fafc; color: #003087; text-align: center; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 0.8rem; border: 1px solid #cbd5e1; }
-        
-        /* Modal Styles */
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 1000; overflow-y: auto; padding: 20px; box-sizing: border-box; }
-        .modal-content { background: white; padding: 25px; border-radius: 15px; max-width: 550px; margin: 40px auto; line-height: 1.6; }
-        .btn-ack { background: #27ae60; color: white; width: 100%; padding: 15px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold; font-size: 1.1rem; margin-top: 20px; }
-        .close-btn { background: #eee; color: #333; padding: 5px 15px; border-radius: 5px; border: none; float: right; cursor: pointer; }
+        .btn-secondary { background: #334155; color: white !important; width: 100%; margin-top: 10px; }
+
+        /* Acknowledgment Modal */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 1000; padding: 20px; box-sizing: border-box; }
+        .modal-content { background: white; padding: 25px; border-radius: 15px; max-width: 500px; margin: 60px auto; line-height: 1.6; text-align: center; }
+        .btn-confirm { background: #27ae60; color: white; width: 100%; padding: 15px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold; font-size: 1.1rem; margin-top: 20px; }
         
         .report-box { display: none; background: #f1f5f9; border: 1px dashed #64748b; padding: 15px; border-radius: 8px; margin-top: 10px; white-space: pre-wrap; font-family: monospace; font-size: 0.85rem; text-align: left; }
         canvas { width: 100% !important; height: 300px !important; }
@@ -30,7 +32,7 @@
 </head>
 <body>
 
-    <div id="status-banner" class="banner bg-safe">CONNECTING...</div>
+    <div id="status-banner" class="banner bg-safe">UPDATING LIVE DATA...</div>
 
     <div class="card" style="text-align: center;">
         <button id="report-trigger" class="btn-report">📝 GENERATE REPORT & SHARE</button>
@@ -38,7 +40,7 @@
         
         <div class="label" style="margin-top: 15px;">Bridge Clearance (Deck: 2.80m)</div>
         <div id="clearance" style="font-size: 3.5rem; font-weight: 900;">--.--m</div>
-        <div id="time" style="font-size: 0.8rem; color: #999;">Updating...</div>
+        <div id="time" style="font-size: 0.8rem; color: #999;">Fetching latest gauge reading...</div>
     </div>
 
     <div class="card">
@@ -47,36 +49,22 @@
     </div>
 
     <div class="card">
-        <div class="label">Official Resources & Help</div>
+        <div class="label">Official Resources & Emergency</div>
         <div class="link-grid">
             <a href="https://www.kempsey.nsw.gov.au/Your-Council/Emergency-information/Road-closures" target="_blank" class="btn-link">Road Closures</a>
             <a href="http://www.bom.gov.au/nsw/warnings/flood/macleayriver.shtml" target="_blank" class="btn-link">BOM Warnings</a>
             <a href="tel:132500" class="btn-link" style="color:#d35400;">📞 SES (132 500)</a>
             <a href="tel:000" class="btn-link" style="color:#c0392b;">📞 Emergency (000)</a>
         </div>
-        <button onclick="openModal('about-modal')" class="btn-link" style="width:100%; margin-top:10px; background:#334155; color:white;">ℹ️ PROJECT BACKGROUND</button>
+        <a href="about.html" class="btn-link btn-secondary">ℹ️ ABOUT THIS PROJECT & MISSION</a>
     </div>
 
     <div id="ack-modal" class="modal">
         <div class="modal-content">
-            <h2 style="margin-top:0;">Before you share...</h2>
-            <p>Floodwatch is a <strong>private project</strong> and is not affiliated with the SES, BOM, or Council.</p>
-            <p><strong>This report only shows current conditions.</strong> It does not forecast or recommend travel. By sharing this data, you acknowledge that you are using raw river measurements for independent verification.</p>
-            <button id="btn-confirm-ack" class="btn-ack">I UNDERSTAND</button>
-        </div>
-    </div>
-
-    <div id="about-modal" class="modal">
-        <div class="modal-content">
-            <button class="close-btn" onclick="closeModal('about-modal')">CLOSE</button>
-            <h2 style="margin-top:0;">Floodwatch — Bellbrook</h2>
-            <hr>
-            <h3>What this is</h3>
-            <p>A public, real-time display answering one question: <strong>Can I safely cross the bridge right now?</strong></p>
-            <h3>What it is not</h3>
-            <p>Floodwatch does <strong>not</strong> forecast future conditions or model scenarios. It shows only what is true now using publicly available measurements.</p>
-            <h3>Core Principle</h3>
-            <p>Withholding simple, actionable information does not increase safety. Providing it—clearly and without interpretation—does.</p>
+            <h2 style="margin-top:0;">Sharing Confirmation</h2>
+            <p>Floodwatch is a <strong>private project</strong>. This tool shows current river height data only.</p>
+            <p>By generating a report, you acknowledge that you have read the project journey and understand this is for <strong>independent verification</strong>, not official instruction.</p>
+            <button id="btn-confirm-ack" class="btn-confirm">I UNDERSTAND</button>
         </div>
     </div>
 
@@ -117,13 +105,10 @@
             } catch (e) { console.error(e); }
         }
 
-        function openModal(id) { document.getElementById(id).style.display = 'block'; }
-        function closeModal(id) { document.getElementById(id).style.display = 'none'; }
-
         // Logic for Report Generation
         document.getElementById('report-trigger').addEventListener('click', () => {
             if (!hasAcknowledged) {
-                openModal('ack-modal');
+                document.getElementById('ack-modal').style.display = 'block';
             } else {
                 generateReport();
             }
@@ -131,12 +116,12 @@
 
         document.getElementById('btn-confirm-ack').addEventListener('click', () => {
             hasAcknowledged = true;
-            closeModal('ack-modal');
+            document.getElementById('ack-modal').style.display = 'none';
             generateReport();
         });
 
         function generateReport() {
-            const report = `🌊 Bellbrook Bridge Update\nStatus: ${currentStatus.toUpperCase()}\nRiver: ${lastHeight}m | Clearance: ${lastClearance}m\nObserved: ${lastTime}\nLive View: ${window.location.href}`;
+            const report = `🌊 Bellbrook Bridge Update\nStatus: ${currentStatus.toUpperCase()}\nRiver: ${lastHeight}m | Clearance: ${lastClearance}m\nObserved: ${lastTime}\n\nLive View: ${window.location.href}`;
             const box = document.getElementById('report-text');
             box.innerText = report;
             box.style.display = 'block';
@@ -146,8 +131,8 @@
             }
         }
 
-        // Chart Data
-        const initialData = [{t: "04/01 19:19", h: 0.41}, {t: "04/01 22:19", h: 0.42}];
+        // Chart Init
+        const initialData = [{t: "04/01 19:19", h: 0.41}, {t: "04/01 22:19", h: 0.42}, {t: "05/01 00:15", h: 0.42}];
         const ctx = document.getElementById('floodChart').getContext('2d');
         new Chart(ctx, {
             type: 'line',
