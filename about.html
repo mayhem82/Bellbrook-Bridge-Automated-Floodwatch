@@ -3,211 +3,58 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
-    <title>Bellbrook Bridge Watch | Live Clearance</title>
-    <meta name="description" content="Real-time river height and bridge clearance for Bellbrook Bridge.">
-    <meta property="og:title" content="Bellbrook Bridge Watch">
-    <meta property="og:description" content="Live status: Can I safely cross the bridge right now?">
-    <meta property="og:type" content="website">
-    
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@2.1.0"></script>
-    
-    <title>About | Bellbrook Bridge Watch</title>
-    <meta name="description" content="Background, mission, and safety notes for Bellbrook Bridge Watch.">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <title>About - Bellbrook Bridge Watch</title>
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 10px; background: #eef2f5; color: #333; }
-        .banner { padding: 20px; border-radius: 12px; margin-bottom: 10px; text-align: center; font-weight: bold; color: white; font-size: 1.4rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        .card { background: white; border-radius: 12px; padding: 20px; margin-bottom: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        .label { font-size: 0.8rem; color: #666; font-weight: bold; text-transform: uppercase; margin-bottom: 5px; }
-        .bg-safe { background: #27ae60; } .bg-warn { background: #f39c12; } .bg-danger { background: #c0392b; }
-        
-        .btn-report { display: block; width: 100%; padding: 18px; background: #007bff; color: white; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; font-size: 1.1rem; box-shadow: 0 4px 0 #0056b3; margin-bottom: 10px; }
-        .btn-report:active { transform: translateY(2px); box-shadow: 0 2px 0 #0056b3; }
-        
-        .link-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .btn-link { display: block; padding: 12px; background: #f8fafc; color: #003087; text-align: center; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 0.8rem; border: 1px solid #cbd5e1; }
-        .btn-secondary { background: #334155; color: white !important; width: 100%; margin-top: 10px; }
-
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 1000; padding: 20px; box-sizing: border-box; }
-        .modal-content { background: white; padding: 25px; border-radius: 15px; max-width: 500px; margin: 60px auto; line-height: 1.6; text-align: center; }
-        .btn-confirm { background: #27ae60; color: white; width: 100%; padding: 15px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold; font-size: 1.1rem; margin-top: 20px; }
-        
-        .report-box { display: none; background: #f1f5f9; border: 1px dashed #64748b; padding: 15px; border-radius: 8px; margin-top: 10px; white-space: pre-wrap; font-family: monospace; font-size: 0.85rem; text-align: left; }
-        canvas { width: 100% !important; height: 350px !important; }
-        
-        .verify-text { font-size: 0.75rem; color: #7f8c8d; font-style: italic; margin-top: 10px; }
-        :root {
-            --bg: #0f172a;
-            --card: #111827;
-            --muted: #94a3b8;
-            --border: #1e293b;
-            --accent: #38bdf8;
-            --text: #e2e8f0;
-            --shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
-        }
-        * { box-sizing: border-box; }
-        body { margin: 0; font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: radial-gradient(circle at 20% 20%, #111827, #0b1222 55%), #0b1222; color: var(--text); }
-        .page { max-width: 860px; margin: 0 auto; padding: 32px 18px 80px; }
-        header { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
-        .brand { display: flex; align-items: center; gap: 12px; }
-        .brand-icon { width: 44px; height: 44px; border-radius: 12px; background: linear-gradient(135deg, #2563eb, #22d3ee); display: grid; place-items: center; font-weight: 800; color: #e0f2fe; box-shadow: var(--shadow); }
-        h1 { margin: 0; letter-spacing: -0.02em; }
-        a { color: inherit; text-decoration: none; }
-        .link-btn { display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--border); background: rgba(255,255,255,0.04); color: var(--text); padding: 10px 14px; border-radius: 12px; font-weight: 600; }
-        .card { background: linear-gradient(145deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); border: 1px solid var(--border); border-radius: 16px; padding: 20px; margin-top: 16px; box-shadow: var(--shadow); }
-        .card h2 { margin-top: 0; margin-bottom: 8px; letter-spacing: -0.01em; }
-        .card p { color: var(--muted); line-height: 1.7; }
-        ul { color: var(--muted); line-height: 1.7; padding-left: 18px; }
-        .pill { display: inline-flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 999px; border: 1px solid rgba(191, 219, 254, 0.35); background: rgba(37, 99, 235, 0.12); color: #bfdbfe; font-weight: 700; }
-        .grid { display: grid; gap: 12px; }
-        .muted { color: var(--muted); }
-        footer { margin-top: 24px; color: var(--muted); text-align: center; }
+        body { font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 10px; background: #eef2f5; color: #333; line-height: 1.5; }
+        .card { background: white; border-radius: 12px; padding: 25px; margin-bottom: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        h2 { margin-top: 0; color: #34495e; border-bottom: 2px solid #eef2f5; padding-bottom: 10px; }
+        .btn { display: block; width: 100%; padding: 15px; background: #34495e; color: white; text-align: center; text-decoration: none; border-radius: 12px; font-weight: bold; margin-bottom: 20px; box-sizing: border-box; }
+        .btn-back { background: #7f8c8d; }
+        .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 20px 0; }
+        .stat-item { background: #f8f9fa; padding: 10px; border-radius: 8px; text-align: center; border: 1px solid #eee; }
+        .stat-label { font-size: 0.7rem; color: #666; text-transform: uppercase; font-weight: bold; }
+        .stat-val { font-weight: bold; display: block; }
+        .important { color: #c0392b; font-weight: bold; }
     </style>
 </head>
 <body>
-    <div class="page">
-        <header>
-            <div class="brand">
-                <div class="brand-icon">BW</div>
-                <div>
-                    <h1>About this project</h1>
-                    <div class="muted">Bellbrook Bridge Watch · Community reference</div>
-                </div>
-            </div>
-            <a class="link-btn" href="index.html">⬅️ Back to live view</a>
-        </header>
 
-    <div id="status-banner" class="banner bg-safe">UPDATING LIVE DATA...</div>
+    <a href="index.html" class="btn btn-back">← BACK TO LIVE DATA</a>
 
-    <div class="card" style="text-align: center;">
-        <button id="report-trigger" class="btn-report">📝 GENERATE REPORT & SHARE</button>
-        <div id="report-text" class="report-box"></div>
+    <div class="card">
+        <h2>Project Mission</h2>
+        <p>This dashboard was created to provide the Bellbrook community with a simple, mobile-first way to check bridge accessibility during rain events.</p>
         
-        <div class="label" style="margin-top: 15px;">Bridge Clearance (Deck: 2.80m)</div>
-        <div id="clearance" style="font-size: 3.5rem; font-weight: 900;">--.--m</div>
-        <div id="time" style="font-size: 0.8rem; color: #999;">Fetching latest gauge reading...</div>
-        <div class="verify-text">Calculated: 2.80m (Deck) - River Height = Clearance</div>
+        <p>By automating the data from the river gauges, we remove the guesswork of calculating clearance manually from height tables.</p>
     </div>
 
     <div class="card">
-        <div class="label">Macleay at Bellbrook: 7-Day Trend</div>
-        <canvas id="floodChart"></canvas>
+        <h2>Bridge Reference</h2>
+        <div class="stat-grid">
+            <div class="stat-item">
+                <span class="stat-label">Deck Height</span>
+                <span class="stat-val">2.80m</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Source Gauge</span>
+                <span class="stat-val">Bellbrook</span>
+            </div>
+        </div>
+        <p>Clearance is calculated as: <br><code>2.80m (Deck) - River Height = Clearance</code></p>
+        <p class="important">Note: Local debris or wave action can affect safety even if the data shows minor clearance.</p>
     </div>
 
     <div class="card">
-        <div class="label">Official Resources & Emergency</div>
-        <div class="link-grid">
-            <a href="https://www.kempsey.nsw.gov.au/Your-Council/Emergency-information/Road-closures" target="_blank" class="btn-link">Road Closures</a>
-            <a href="http://www.bom.gov.au/nsw/warnings/flood/macleayriver.shtml" target="_blank" class="btn-link">BOM Warnings</a>
-            <a href="tel:132500" class="btn-link" style="color:#d35400;">📞 SES (132 500)</a>
-            <a href="tel:000" class="btn-link" style="color:#c0392b;">📞 Emergency (000)</a>
-        </div>
-        <a href="about.html" class="btn-link btn-secondary">ℹ️ READ PROJECT DISCLAIMER & MISSION</a>
+        <h2>Official Links</h2>
+        <a href="https://macleay.nsw.gov.au/My-community/Webcams/Bellbrook" target="_blank" class="btn">📸 Live Webcam</a>
+        <a href="https://www.kempsey.nsw.gov.au/Your-Council/Emergency-information/Road-closures" target="_blank" class="btn">🚧 Council Road Closures</a>
+        <a href="http://www.bom.gov.au/nsw/warnings/flood/macleayriver.shtml" target="_blank" class="btn">🌧️ BOM Flood Warnings</a>
     </div>
 
-    <div id="ack-modal" class="modal">
-        <div class="modal-content">
-            <h2>Sharing Confirmation</h2>
-            <p>Floodwatch is a private project. By generating a report, you acknowledge that you have read the project mission and understand this is for <strong>independent verification</strong>.</p>
-            <button id="btn-confirm-ack" class="btn-confirm">I UNDERSTAND</button>
-        </div>
+    <div style="text-align: center; font-size: 0.7rem; color: #999; padding: 20px;">
+        This is a private community tool. <br>
+        Built for Bellbrook. Updated Jan 2026.
     </div>
-        <section class="card">
-            <div class="pill">Mission</div>
-            <h2>Why Bellbrook Bridge Watch exists</h2>
-            <p>During fast-moving rain events, neighbours needed a quick snapshot: <strong>“Is the bridge clear to cross?”</strong> This site displays the latest river height at Bellbrook Bridge, calculates clearance against the 2.80 m deck, and surfaces official links so you can validate conditions independently.</p>
-        </section>
 
-    <script>
-        const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRohfSEJSpuwFQNvpmrmnS0jfADxdhZ218WSZPfwXiUZHWNL0UWHSHKoJdtwZ89tRNwAjMiYc_GOGd2/pub?gid=0&single=true&output=csv";
-        const DECK = 2.80;
-        let lastHeight = 0, lastClearance = 0, currentStatus = "Checking...", lastTime = "", hasAcknowledged = false;
-        <section class="grid">
-            <div class="card">
-                <h2>How data is sourced</h2>
-                <ul>
-                    <li>River height is read from a published Google Sheets CSV feed maintained by the project.</li>
-                    <li>The deck reference is fixed at <strong>2.80 m</strong>; clearance = deck – river height.</li>
-                    <li>The chart and status refresh every 5 minutes when the CSV is reachable.</li>
-                </ul>
-            </div>
-
-        async function update() {
-            try {
-                const res = await fetch(CSV_URL + "&cache=" + Date.now());
-                const text = await res.text();
-                let d = text.split(",").map(item => item.replace(/"/g, "").trim());
-                const bh = parseFloat(d[0]); 
-                lastTime = d[1];
-                if (!isNaN(bh)) {
-                    lastHeight = bh.toFixed(2);
-                    lastClearance = (DECK - bh).toFixed(2);
-                    document.getElementById("clearance").innerText = lastClearance + "m";
-                    document.getElementById("time").innerText = "Last Obs: " + lastTime;
-                    const banner = document.getElementById("status-banner");
-                    if (bh >= 2.80) { currentStatus = "Closed"; banner.innerText = "🚫 BRIDGE CLOSED"; banner.className = "banner bg-danger"; }
-                    else if (bh >= 2.30) { currentStatus = "Danger"; banner.innerText = "⚠️ DANGER: NEAR DECK"; banner.className = "banner bg-warn"; }
-                    else { currentStatus = "Safe"; banner.innerText = "✅ SAFE TO CROSS"; banner.className = "banner bg-safe"; }
-                }
-            } catch (e) { console.error(e); }
-        }
-            <div class="card">
-                <h2>How to interpret the status</h2>
-                <ul>
-                    <li><strong>Open:</strong> Water is well below deck height.</li>
-                    <li><strong>Elevated:</strong> Rising water—monitor closely.</li>
-                    <li><strong>Near deck:</strong> Dangerous; water is approaching the deck.</li>
-                    <li><strong>Closed:</strong> Water at or above deck height—do not cross.</li>
-                </ul>
-            </div>
-
-        document.getElementById('report-trigger').addEventListener('click', () => {
-            if (!hasAcknowledged) document.getElementById('ack-modal').style.display = 'block';
-            else generateReport();
-        });
-            <div class="card">
-                <h2>Important safety notes</h2>
-                <ul>
-                    <li>This is a community information project, not an official directive.</li>
-                    <li>Always check multiple sources (e.g., SES, BOM) before travelling.</li>
-                    <li>Local conditions can change faster than the refresh interval.</li>
-                    <li>If in doubt, choose safety and avoid crossing.</li>
-                </ul>
-            </div>
-
-        document.getElementById('btn-confirm-ack').addEventListener('click', () => {
-            hasAcknowledged = true;
-            document.getElementById('ack-modal').style.display = 'none';
-            generateReport();
-        });
-            <div class="card">
-                <h2>Contact & feedback</h2>
-                <p class="muted">If you see data that looks incorrect or have ideas to improve the site, please share feedback with the local community lead so we can keep the tool useful and reliable.</p>
-            </div>
-        </section>
-
-        function generateReport() {
-            const report = `🌊 Bellbrook Bridge Update\nStatus: ${currentStatus.toUpperCase()}\nRiver: ${lastHeight}m | Clearance: ${lastClearance}m\nObserved: ${lastTime}\n\nLive View: ${window.location.href}`;
-            document.getElementById('report-text').innerText = report;
-            document.getElementById('report-text').style.display = 'block';
-            if (navigator.share) navigator.share({ title: 'Bellbrook Bridge Watch', text: report, url: window.location.href }).catch(()=>{});
-        }
-
-        const initialData = [{t: "04/01 19:19", h: 0.41}, {t: "04/01 22:19", h: 0.42}, {t: "05/01 00:15", h: 0.42}];
-        const ctx = document.getElementById('floodChart').getContext('2d');
-        new Chart(ctx, {
-            type: 'line',
-            data: { labels: initialData.map(d => d.t), datasets: [{ label: 'Water Height (m)', borderColor: '#2563eb', backgroundColor: 'rgba(37, 99, 235, 0.1)', data: initialData.map(d => d.h), fill: true, tension: 0.3, borderWidth: 3 }] },
-            options: { responsive: true, maintainAspectRatio: false, scales: { y: { min: 0, max: 6 } }, plugins: { annotation: { annotations: { deckLine: { type: 'line', yMin: 2.8, yMax: 2.8, borderColor: '#64748b', borderWidth: 4, label: { display: true, content: 'BRIDGE DECK (2.8m)', position: 'end' } } } } } }
-        });
-        update();
-        setInterval(update, 300000); 
-    </script>
-        <footer>Stay safe, look after neighbours, and follow official emergency advice.</footer>
-    </div>
 </body>
 </html>
