@@ -12,8 +12,9 @@
         .label { font-size: 0.8rem; color: #666; font-weight: bold; text-transform: uppercase; }
         .val { font-size: 2.5rem; font-weight: 900; display: block; margin: 5px 0; }
         .bg-safe { background: #27ae60; } .bg-warn { background: #f39c12; } .bg-danger { background: #c0392b; }
-        .btn { display: block; width: 100%; padding: 15px; background: #34495e; color: white; text-align: center; text-decoration: none; border-radius: 12px; font-weight: bold; margin-top: 10px; }
-        .footer-note { text-align: center; font-size: 0.7rem; color: #888; margin-top: 10px; }
+        .btn { display: block; width: 100%; padding: 15px; background: #34495e; color: white; text-align: center; text-decoration: none; border-radius: 12px; font-weight: bold; margin-top: 10px; box-sizing: border-box; }
+        .footer-note { text-align: center; font-size: 0.7rem; color: #888; margin-top: 20px; border-top: 1px solid #ccc; padding-top: 10px; }
+        .disclaimer { font-size: 0.65rem; color: #999; text-align: justify; line-height: 1.3; margin-top: 10px; }
         canvas { width: 100% !important; height: 200px !important; }
     </style>
 </head>
@@ -40,39 +41,38 @@
 
     <div class="card">
         <div class="label">Live Gauge Camera</div>
-        <p style="font-size: 0.8rem; color: #666;">External feed (opens in new window)</p>
+        <p style="font-size: 0.8rem; color: #666;">External feed provided by Kempsey Shire Council.</p>
         <a href="https://macleay.nsw.gov.au/My-community/Webcams/Bellbrook" target="_blank" class="btn">📸 OPEN BELLBROOK WEBCAM</a>
     </div>
 
-    <div class="footer-note">Data auto-refreshes every 5 minutes. Source: BOM/Council CSV.</div>
+    <div class="footer-note">
+        <strong>Bellbrook Automated Floodwatch</strong><br>
+        Data auto-refreshes every 5 minutes.
+        <div class="disclaimer">
+            <strong>DISCLAIMER:</strong> This dashboard is for informational purposes only and is not an official flood warning system. Data is sourced from third-party CSV feeds (BOM/Council) and may be delayed or inaccurate due to sensor failure or network issues. <strong>Never drive through floodwaters.</strong> For emergency assistance, contact the NSW SES on 132 500 or call 000 in a life-threatening emergency. Use of this data is at your own risk.
+        </div>
+    </div>
 
     <script>
         const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRohfSEJSpuwFQNvpmrmnS0jfADxdhZ218WSZPfwXiUZHWNL0UWHSHKoJdtwZ89tRNwAjMiYc_GOGd2/pub?gid=0&single=true&output=csv";
         const DECK = 2.80;
         let chart;
 
-        // Initialize Chart
         function initChart() {
             const ctx = document.getElementById('heightChart').getContext('2d');
             chart = new Chart(ctx, {
                 type: 'line',
                 data: { labels: [], datasets: [{ label: 'Height (m)', data: [], borderColor: '#3498db', fill: true, backgroundColor: 'rgba(52, 152, 219, 0.1)', tension: 0.3 }] },
-                options: { responsive: true, scales: { y: { beginAtZero: false } } }
+                options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: false } } }
             });
             loadHistory();
         }
 
-        // Save data to local storage (5 day limit)
         function saveHistory(height, time) {
             let history = JSON.parse(localStorage.getItem('flood_history') || '[]');
-            // Don't add duplicate times
             if (history.length > 0 && history[history.length - 1].time === time) return;
-            
             history.push({ height, time });
-            
-            // Keep roughly 5 days of data (assuming 5-min updates = 1440 entries)
-            if (history.length > 1440) history.shift();
-            
+            if (history.length > 1440) history.shift(); // Approx 5 days of data
             localStorage.setItem('flood_history', JSON.stringify(history));
             updateChart(history);
         }
@@ -105,12 +105,10 @@
                     document.getElementById("b-height").innerText = bh.toFixed(2) + "m";
                     document.getElementById("b-trend").innerText = bt;
                     
-                    // Format time for the label and chart
                     const obsDate = new Date(timeStr);
                     const labelTime = !isNaN(obsDate.getTime()) ? obsDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : timeStr;
                     document.getElementById("time").innerText = "Last Obs: " + labelTime;
                     
-                    // Save to chart history
                     saveHistory(bh, labelTime);
                 }
 
