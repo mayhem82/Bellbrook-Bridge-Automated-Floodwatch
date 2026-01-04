@@ -10,10 +10,10 @@
         body { font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 10px; background: #eef2f5; }
         .banner { padding: 20px; border-radius: 12px; margin-bottom: 10px; text-align: center; font-weight: bold; color: white; font-size: 1.4rem; }
         .card { background: white; border-radius: 12px; padding: 20px; margin-bottom: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        .label { font-size: 0.8rem; color: #666; font-weight: bold; text-transform: uppercase; margin-bottom: 10px; display: block; }
+        .label { font-size: 0.8rem; color: #666; font-weight: bold; text-transform: uppercase; margin-bottom: 5px; display: block; }
         .bg-safe { background: #27ae60; } .bg-warn { background: #f39c12; } .bg-danger { background: #c0392b; }
         .btn { display: block; width: 100%; padding: 15px; background: #34495e; color: white; text-align: center; text-decoration: none; border-radius: 12px; font-weight: bold; margin-top: 10px; box-sizing: border-box; }
-        .cam-frame { width: 100%; border-radius: 8px; border: 1px solid #ddd; display: block; }
+        .btn-cam { background: #2980b9; }
         .footer-note { text-align: center; font-size: 0.7rem; color: #888; margin-top: 20px; border-top: 1px solid #ccc; padding-top: 10px; }
         canvas { width: 100% !important; height: 300px !important; }
     </style>
@@ -29,17 +29,14 @@
     </div>
 
     <div class="card">
-        <div class="label">Live Gauge Camera (Auto-refreshes)</div>
-        <img id="bridge-cam" src="https://prospectsstorageaccount.blob.core.windows.net/prospectpublicimages/662/Overview.jpeg" class="cam-frame" alt="Live Bridge Camera">
+        <div class="label">Live Tools</div>
+        <a id="cam-link" href="https://prospectsstorageaccount.blob.core.windows.net/prospectpublicimages/662/Overview.jpeg" target="_blank" class="btn btn-cam">📸 VIEW LIVE BRIDGE PHOTO</a>
+        <a href="about.html" class="btn">ℹ️ ABOUT PROJECT / MISSION</a>
     </div>
 
     <div class="card">
         <div class="label">5-Day River Height Trend (m)</div>
         <canvas id="floodChart"></canvas>
-    </div>
-
-    <div class="card">
-        <a href="about.html" class="btn">ℹ️ ABOUT THIS PROJECT</a>
     </div>
 
     <div class="footer-note">
@@ -48,7 +45,6 @@
 
     <script>
         const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRohfSEJSpuwFQNvpmrmnS0jfADxdhZ218WSZPfwXiUZHWNL0UWHSHKoJdtwZ89tRNwAjMiYc_GOGd2/pub?gid=0&single=true&output=csv";
-        const CAM_URL = "https://prospectsstorageaccount.blob.core.windows.net/prospectpublicimages/662/Overview.jpeg";
         const DECK = 2.80;
         let chart;
 
@@ -89,8 +85,8 @@
         }
 
         async function update() {
-            // Refresh Camera Image
-            document.getElementById("bridge-cam").src = CAM_URL + "?t=" + Date.now();
+            // Update the camera link with a timestamp to ensure fresh image
+            document.getElementById("cam-link").href = "https://prospectsstorageaccount.blob.core.windows.net/prospectpublicimages/662/Overview.jpeg?t=" + Date.now();
 
             try {
                 const res = await fetch(CSV_URL + "&cache=" + Date.now());
@@ -116,7 +112,7 @@
 
         initChart();
         update();
-        setInterval(update, 300000); // 5 minute refresh
+        setInterval(update, 300000);
     </script>
 </body>
 </html>
