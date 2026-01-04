@@ -1,10 +1,11 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bellbrook Bridge Watch</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@2.1.0"></script>
     <style>
         body { font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 10px; background: #eef2f5; }
         .banner { padding: 20px; border-radius: 12px; margin-bottom: 10px; text-align: center; font-weight: bold; color: white; font-size: 1.4rem; }
@@ -28,8 +29,8 @@
         <div id="time" style="font-size: 0.8rem; color: #999;">Waiting for update...</div>
     </div>
 
-    <div class="card" style="text-align: center;">
-        <div class="label">River Height Trend</div>
+    <div class="card">
+        <div class="label">5-Day River Height (m)</div>
         <canvas id="floodChart"></canvas>
     </div>
 
@@ -42,7 +43,7 @@
         <strong>Bellbrook Automated Floodwatch</strong>
         <div class="disclaimer">
             <strong>BOM LEVELS:</strong> Minor: 6.5m | Moderate: 10.5m | Major: 13.5m<br>
-            <strong>DISCLAIMER:</strong> This tool is for information only. Data from BOM/Council. Never drive through floodwaters. SES: 132 500.
+            <strong>DISCLAIMER:</strong> This tool is for community information only. Data from BOM/Council. Never drive through floodwaters. SES: 132 500.
         </div>
     </div>
 
@@ -57,45 +58,35 @@
                 type: 'line',
                 data: {
                     labels: [],
-                    datasets: [
-                        {
-                            label: 'River Height (m)',
-                            borderColor: '#3498db',
-                            backgroundColor: 'rgba(52, 152, 219, 0.1)',
-                            data: [],
-                            yAxisID: 'y',
-                            fill: true,
-                            tension: 0.3
-                        },
-                        {
-                            label: 'Clearance (m)',
-                            borderColor: '#e67e22',
-                            borderDash: [5, 5],
-                            data: [],
-                            yAxisID: 'y1',
-                            fill: false,
-                            tension: 0.3
-                        }
-                    ]
+                    datasets: [{
+                        label: 'Water Level (m)',
+                        borderColor: '#3498db',
+                        backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                        data: [],
+                        fill: true,
+                        tension: 0.2,
+                        pointRadius: 0 // Keep lines clean
+                    }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
                     scales: {
-                        y: {
-                            type: 'linear',
-                            display: true,
-                            position: 'left',
-                            title: { display: true, text: 'River Height (m)' },
-                            suggestedMax: 15
-                        },
-                        y1: {
-                            type: 'linear',
-                            display: true,
-                            position: 'right',
-                            title: { display: true, text: 'Clearance (m)' },
-                            grid: { drawOnChartArea: false },
-                            suggestedMin: -2
+                        x: { title: { display: true, text: 'Time (Last 5 Days)' } },
+                        y: { 
+                            beginAtZero: true, 
+                            suggestedMax: 15,
+                            title: { display: true, text: 'Height in Meters (m)' }
+                        }
+                    },
+                    plugins: {
+                        annotation: {
+                            annotations: {
+                                deck: { type: 'line', yMin: 2.8, yMax: 2.8, borderColor: 'black', borderWidth: 2, label: { display: true, content: 'BRIDGE DECK (2.8m)', position: 'start', backgroundColor: 'black' }},
+                                minor: { type: 'line', yMin: 6.5, yMax: 6.5, borderColor: '#f39c12', borderDash: [6, 6], label: { display: true, content: 'MINOR (6.5m)', position: 'end' }},
+                                moderate: { type: 'line', yMin: 10.5, yMax: 10.5, borderColor: '#d35400', borderDash: [6, 6], label: { display: true, content: 'MODERATE (10.5m)', position: 'end' }},
+                                major: { type: 'line', yMin: 13.5, yMax: 13.5, borderColor: '#c0392b', borderDash: [6, 6], label: { display: true, content: 'MAJOR (13.5m)', position: 'end' }}
+                            }
                         }
                     }
                 }
@@ -103,24 +94,23 @@
             loadHistory();
         }
 
-        function saveHistory(height, clearance, time) {
-            let history = JSON.parse(localStorage.getItem('flood_history_v3') || '[]');
+        function saveHistory(height, time) {
+            let history = JSON.parse(localStorage.getItem('flood_history_v4') || '[]');
             if (history.length > 0 && history[history.length - 1].time === time) return;
-            history.push({ height, clearance, time });
-            if (history.length > 1440) history.shift();
-            localStorage.setItem('flood_history_v3', JSON.stringify(history));
+            history.push({ height, time });
+            if (history.length > 1440) history.shift(); // Keep ~5 days
+            localStorage.setItem('flood_history_v4', JSON.stringify(history));
             updateChart(history);
         }
 
         function loadHistory() {
-            let history = JSON.parse(localStorage.getItem('flood_history_v3') || '[]');
+            let history = JSON.parse(localStorage.getItem('flood_history_v4') || '[]');
             updateChart(history);
         }
 
         function updateChart(history) {
             chart.data.labels = history.map(h => h.time);
             chart.data.datasets[0].data = history.map(h => h.height);
-            chart.data.datasets[1].data = history.map(h => h.clearance);
             chart.update();
         }
 
@@ -139,10 +129,10 @@
                     document.getElementById("clearance").innerText = cl.toFixed(2) + "m";
                     
                     const obsDate = new Date(timeStr);
-                    const labelTime = !isNaN(obsDate.getTime()) ? obsDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : timeStr;
+                    const labelTime = !isNaN(obsDate.getTime()) ? obsDate.toLocaleDateString([], {day:'2-digit', month:'2-digit'}) + " " + obsDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : timeStr;
                     document.getElementById("time").innerText = "Last Obs: " + labelTime;
                     
-                    saveHistory(bh, cl, labelTime);
+                    saveHistory(bh, labelTime);
 
                     const banner = document.getElementById("status-banner");
                     if (bh >= 2.80) {
@@ -156,7 +146,7 @@
                         banner.className = "banner bg-safe";
                     }
                 }
-            } catch (e) { console.error("Update Error", e); }
+            } catch (e) { console.error("Data error", e); }
         }
 
         initChart();
