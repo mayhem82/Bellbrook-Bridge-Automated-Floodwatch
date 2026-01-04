@@ -1,11 +1,10 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bellbrook Bridge Watch</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@2.1.0"></script>
     <style>
         body { font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 10px; background: #eef2f5; }
         .banner { padding: 20px; border-radius: 12px; margin-bottom: 10px; text-align: center; font-weight: bold; color: white; font-size: 1.4rem; }
@@ -16,7 +15,7 @@
         .btn { display: block; width: 100%; padding: 15px; background: #34495e; color: white; text-align: center; text-decoration: none; border-radius: 12px; font-weight: bold; margin-top: 10px; box-sizing: border-box; }
         .footer-note { text-align: center; font-size: 0.7rem; color: #888; margin-top: 20px; border-top: 1px solid #ccc; padding-top: 10px; }
         .disclaimer { font-size: 0.65rem; color: #999; text-align: justify; line-height: 1.3; margin-top: 10px; }
-        canvas { width: 100% !important; height: 300px !important; }
+        canvas { width: 100% !important; height: 350px !important; }
     </style>
 </head>
 <body>
@@ -30,14 +29,8 @@
     </div>
 
     <div class="card" style="text-align: center;">
-        <div class="label">Bellbrook Gauge Height</div>
-        <span id="b-height" class="val">--.--m</span>
-        <span id="b-trend" style="font-weight: bold; color: #444;">--</span>
-    </div>
-
-    <div class="card">
-        <div class="label">Bridge & River Status (5-Day)</div>
-        <canvas id="heightChart"></canvas>
+        <div class="label">River Height Trend</div>
+        <canvas id="floodChart"></canvas>
     </div>
 
     <div class="card">
@@ -48,8 +41,8 @@
     <div class="footer-note">
         <strong>Bellbrook Automated Floodwatch</strong>
         <div class="disclaimer">
-            <strong>BOM LEVELS:</strong> Minor: 6.5m | Mod: 10.5m | Major: 13.5m<br>
-            <strong>DISCLAIMER:</strong> Informational only. Data from BOM/Council. Never drive through floodwaters. SES: 132 500.
+            <strong>BOM LEVELS:</strong> Minor: 6.5m | Moderate: 10.5m | Major: 13.5m<br>
+            <strong>DISCLAIMER:</strong> This tool is for information only. Data from BOM/Council. Never drive through floodwaters. SES: 132 500.
         </div>
     </div>
 
@@ -59,58 +52,50 @@
         let chart;
 
         function initChart() {
-            const ctx = document.getElementById('heightChart').getContext('2d');
+            const ctx = document.getElementById('floodChart').getContext('2d');
             chart = new Chart(ctx, {
                 type: 'line',
-                data: { 
-                    labels: [], 
+                data: {
+                    labels: [],
                     datasets: [
-                        { 
-                            label: 'River Height (m)', 
-                            data: [], 
-                            borderColor: '#3498db', 
-                            yAxisID: 'y', 
-                            tension: 0.3,
-                            fill: false 
+                        {
+                            label: 'River Height (m)',
+                            borderColor: '#3498db',
+                            backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                            data: [],
+                            yAxisID: 'y',
+                            fill: true,
+                            tension: 0.3
                         },
-                        { 
-                            label: 'Bridge Clearance (m)', 
-                            data: [], 
-                            borderColor: '#e67e22', 
-                            yAxisID: 'y1', 
+                        {
+                            label: 'Clearance (m)',
+                            borderColor: '#e67e22',
                             borderDash: [5, 5],
-                            tension: 0.3,
-                            fill: false 
+                            data: [],
+                            yAxisID: 'y1',
+                            fill: false,
+                            tension: 0.3
                         }
-                    ] 
+                    ]
                 },
-                options: { 
-                    responsive: true, 
+                options: {
+                    responsive: true,
                     maintainAspectRatio: false,
-                    scales: { 
-                        y: { 
-                            type: 'linear', 
-                            display: true, 
+                    scales: {
+                        y: {
+                            type: 'linear',
+                            display: true,
                             position: 'left',
                             title: { display: true, text: 'River Height (m)' },
                             suggestedMax: 15
                         },
-                        y1: { 
-                            type: 'linear', 
-                            display: true, 
+                        y1: {
+                            type: 'linear',
+                            display: true,
                             position: 'right',
                             title: { display: true, text: 'Clearance (m)' },
-                            grid: { drawOnChartArea: false }, // avoid grid overlap
-                            suggestedMin: -5
-                        }
-                    },
-                    plugins: {
-                        annotation: {
-                            annotations: {
-                                minor: { type: 'line', yMin: 6.5, yMax: 6.5, borderColor: 'orange', borderWidth: 2, label: { display: true, content: 'MINOR', position: 'start' }},
-                                major: { type: 'line', yMin: 13.5, yMax: 13.5, borderColor: 'red', borderWidth: 2, label: { display: true, content: 'MAJOR', position: 'start' }},
-                                bridge: { type: 'line', yMin: 2.8, yMax: 2.8, borderColor: 'black', borderWidth: 3, label: { display: true, content: 'BRIDGE DECK', backgroundColor: 'black' }}
-                            }
+                            grid: { drawOnChartArea: false },
+                            suggestedMin: -2
                         }
                     }
                 }
@@ -119,16 +104,16 @@
         }
 
         function saveHistory(height, clearance, time) {
-            let history = JSON.parse(localStorage.getItem('flood_history_v2') || '[]');
+            let history = JSON.parse(localStorage.getItem('flood_history_v3') || '[]');
             if (history.length > 0 && history[history.length - 1].time === time) return;
             history.push({ height, clearance, time });
             if (history.length > 1440) history.shift();
-            localStorage.setItem('flood_history_v2', JSON.stringify(history));
+            localStorage.setItem('flood_history_v3', JSON.stringify(history));
             updateChart(history);
         }
 
         function loadHistory() {
-            let history = JSON.parse(localStorage.getItem('flood_history_v2') || '[]');
+            let history = JSON.parse(localStorage.getItem('flood_history_v3') || '[]');
             updateChart(history);
         }
 
@@ -147,32 +132,29 @@
                 let d = raw.map(item => item.replace(/"/g, "").trim());
 
                 const bh = parseFloat(d[0]); 
-                const bt = d[2];             
                 const timeStr = d[1];
 
                 if (!isNaN(bh)) {
                     const cl = DECK - bh;
                     document.getElementById("clearance").innerText = cl.toFixed(2) + "m";
-                    document.getElementById("b-height").innerText = bh.toFixed(2) + "m";
-                    document.getElementById("b-trend").innerText = bt;
                     
                     const obsDate = new Date(timeStr);
                     const labelTime = !isNaN(obsDate.getTime()) ? obsDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : timeStr;
                     document.getElementById("time").innerText = "Last Obs: " + labelTime;
                     
                     saveHistory(bh, cl, labelTime);
-                }
 
-                const banner = document.getElementById("status-banner");
-                if (bh >= 2.80) {
-                    banner.innerText = "🚫 BRIDGE CLOSED";
-                    banner.className = "banner bg-danger";
-                } else if (bh >= 2.30) {
-                    banner.innerText = "⚠️ DANGER: NEAR DECK";
-                    banner.className = "banner bg-warn";
-                } else {
-                    banner.innerText = "✅ SAFE TO CROSS";
-                    banner.className = "banner bg-safe";
+                    const banner = document.getElementById("status-banner");
+                    if (bh >= 2.80) {
+                        banner.innerText = "🚫 BRIDGE CLOSED";
+                        banner.className = "banner bg-danger";
+                    } else if (bh >= 2.30) {
+                        banner.innerText = "⚠️ DANGER: NEAR DECK";
+                        banner.className = "banner bg-warn";
+                    } else {
+                        banner.innerText = "✅ SAFE TO CROSS";
+                        banner.className = "banner bg-safe";
+                    }
                 }
             } catch (e) { console.error("Update Error", e); }
         }
