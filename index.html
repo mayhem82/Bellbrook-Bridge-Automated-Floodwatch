@@ -16,6 +16,10 @@
         .btn-cam { background: #2980b9; }
         .footer-note { text-align: center; font-size: 0.7rem; color: #888; margin-top: 20px; border-top: 1px solid #ccc; padding-top: 10px; }
         canvas { width: 100% !important; height: 300px !important; }
+        
+        /* New styling for the water level display */
+        .water-level-box { margin-top: 10px; border-top: 1px solid #eee; padding-top: 10px; }
+        .water-val { font-size: 1.2rem; font-weight: 800; color: #2c3e50; }
     </style>
 </head>
 <body>
@@ -25,7 +29,13 @@
     <div class="card" style="text-align: center;">
         <div class="label">Bridge Clearance (Deck: 2.80m)</div>
         <div id="clearance" style="font-size: 3.5rem; font-weight: 900;">--.--m</div>
-        <div id="time" style="font-size: 0.8rem; color: #999;">Waiting for update...</div>
+        
+        <div class="water-level-box">
+            <div class="label">Actual Water Level (Gauge)</div>
+            <div id="water-level" class="water-val">--.--m</div>
+        </div>
+        
+        <div id="time" style="font-size: 0.8rem; color: #999; margin-top: 10px;">Waiting for update...</div>
     </div>
 
     <div class="card">
@@ -93,7 +103,12 @@
                 const timeStr = d[1];
 
                 if (!isNaN(bh)) {
+                    // Update Clearance
                     document.getElementById("clearance").innerText = (DECK - bh).toFixed(2) + "m";
+                    
+                    // Update Actual Water Level
+                    document.getElementById("water-level").innerText = bh.toFixed(2) + "m";
+                    
                     const obsDate = new Date(timeStr);
                     const labelTime = !isNaN(obsDate.getTime()) ? obsDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', day:'numeric', month:'short'}) : timeStr;
                     document.getElementById("time").innerText = "Last Obs: " + labelTime;
