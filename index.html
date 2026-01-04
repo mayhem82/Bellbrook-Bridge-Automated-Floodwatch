@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bellbrook Bridge Watch</title>
+    <style>
+        body { font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 10px; background: #eef2f5; }
+        .banner { padding: 20px; border-radius: 12px; margin-bottom: 10px; text-align: center; font-weight: bold; color: white; font-size: 1.4rem; }
+        .card { background: white; border-radius: 12px; padding: 20px; margin-bottom: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .label { font-size: 0.8rem; color: #666; font-weight: bold; text-transform: uppercase; }
+        .val { font-size: 2.5rem; font-weight: 900; display: block; margin: 5px 0; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .bg-safe { background: #27ae60; } .bg-warn { background: #f39c12; } .bg-danger { background: #c0392b; }
+        iframe { width: 100%; height: 400px; border-radius: 12px; border: 1px solid #ccc; margin-top: 10px; }
+    </style>
+</head>
+<body>
+
+    <div id="status-banner" class="banner bg-safe">LOADING DATA...</div>
+
+    <div class="card" style="text-align: center;">
+        <div class="label">Bridge Clearance (Deck: 2.80m)</div>
+        <div id="clearance" style="font-size: 3.5rem; font-weight: 900;">--.--m</div>
+        <div id="time" style="font-size: 0.8rem; color: #999;">Waiting for update...</div>
+    </div>
+
+    <div class="grid">
+        <div class="card">
+            <div class="label">Bellbrook Gauge</div>
+            <span id="b-height" class="val">--.--m</span>
+            <span id="b-trend" style="font-weight: bold;">--</span>
+        </div>
+        <div class="card">
+            <div class="label">Georges Creek</div>
+            <span id="g-height" class="val">--.--m</span>
+            <span id="g-trend" style="font-weight: bold;">--</span>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="label">Live Rain Radar (Zoom Earth)</div>
+        <iframe src="https://zoom.earth/maps/radar/#view=-30.82,152.51,9z/model=icon"></iframe>
+    </div>
+
+    <script>
+        // Your specific Google Sheet CSV link
+        const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRohfSEJSpuwFQNvpmrmnS0jfADxdhZ218WSZPfwXiUZHWNL0UWHSHKoJdtwZ89tRNwAjMiYc_GOGd2/pub?gid=0&single=true&output=csv";
+        const DECK = 2.80;
+
+        async function update() {
+            try {
+                const res = await fetch(CSV_URL + "&cache=" + Date.now());
+                const text = await res.text();
+                const d = text.split(",");
+
+                const bh = parseFloat(d[0]);
+                const bt = d[2];
+                const gh = parseFloat(d[3]);
+                const gt = d[4];
+                
+                // Clearance Math
+                const cl = DECK - bh;
+                document.getElementById("clearance").innerText = cl.toFixed(2) + "m";
+                document.getElementById("b-height").innerText = bh.toFixed(2) + "m";
+                document.getElementById("b-trend").innerText = bt;
+                document.getElementById("g-height").innerText = gh.toFixed(2) + "m";
+                document.getElementById("g-trend").innerText = gt;
+                
+                // Date Formatting
+                const date = new Date(d[1]);
+                document.getElementById("time").innerText = "Last Obs: " + date.toLocaleTimeString();
+
+                // Banner Logic
+                const banner = document.getElementById("status-banner");
+                if (bh >= 2.80) {
+                    banner.innerText = "🚫 BRIDGE CLOSED";
+                    banner.className = "banner bg-danger";
+                } else if (bh >= 2.30) {
+                    banner.innerText = "⚠️ DANGER: NEAR DECK";
+                    banner.className = "banner bg-warn";
+                } else {
+                    banner.innerText = "✅ SAFE TO CROSS";
+                    banner.className = "banner bg-safe";
+                }
+
+            } catch (e) { console.error("Data error", e); }
+        }
+
+        update();
+        setInterval(update, 300000); // Auto-refresh every 5 mins
+    </script>
+</body>
+</html>
