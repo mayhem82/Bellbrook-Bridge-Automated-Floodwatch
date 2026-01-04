@@ -11,11 +11,14 @@
         .banner { padding: 20px; border-radius: 12px; margin-bottom: 10px; text-align: center; font-weight: bold; color: white; font-size: 1.4rem; }
         .card { background: white; border-radius: 12px; padding: 20px; margin-bottom: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
         .label { font-size: 0.8rem; color: #666; font-weight: bold; text-transform: uppercase; }
-        .val { font-size: 2.5rem; font-weight: 900; display: block; margin: 5px 0; }
         .bg-safe { background: #27ae60; } .bg-warn { background: #f39c12; } .bg-danger { background: #c0392b; }
-        .btn { display: block; width: 100%; padding: 15px; background: #34495e; color: white; text-align: center; text-decoration: none; border-radius: 12px; font-weight: bold; margin-top: 10px; box-sizing: border-box; }
+        
+        .btn-audio { display: block; width: 100%; padding: 18px; background: #673ab7; color: white; text-align: center; border: none; border-radius: 12px; font-weight: bold; margin-bottom: 15px; cursor: pointer; font-size: 1.1rem; box-shadow: 0 4px 0 #4e2d8a; }
+        .btn-audio:active { transform: translateY(2px); box-shadow: 0 2px 0 #4e2d8a; }
+        
+        .btn-bom { display: block; width: 100%; padding: 15px; background: #003087; color: white; text-align: center; text-decoration: none; border-radius: 12px; font-weight: bold; box-sizing: border-box; }
         .footer-note { text-align: center; font-size: 0.7rem; color: #888; margin-top: 20px; border-top: 1px solid #ccc; padding-top: 10px; }
-        canvas { width: 100% !important; height: 300px !important; }
+        canvas { width: 100% !important; height: 320px !important; }
     </style>
 </head>
 <body>
@@ -23,31 +26,39 @@
     <div id="status-banner" class="banner bg-safe">LOADING DATA...</div>
 
     <div class="card" style="text-align: center;">
+        <button id="voice-btn" class="btn-audio">🔊 READ STATUS REPORT</button>
         <div class="label">Bridge Clearance (Deck: 2.80m)</div>
         <div id="clearance" style="font-size: 3.5rem; font-weight: 900;">--.--m</div>
         <div id="time" style="font-size: 0.8rem; color: #999;">Waiting for update...</div>
     </div>
 
     <div class="card">
-        <div class="label">7-Day River Height (Meters)</div>
+        <div class="label">Macleay at Bellbrook: 7-Day Plot</div>
         <canvas id="floodChart"></canvas>
     </div>
 
     <div class="card">
-        <div class="label">Live Gauge Camera</div>
-        <a href="https://macleay.nsw.gov.au/My-community/Webcams/Bellbrook" target="_blank" class="btn">📸 OPEN BELLBROOK WEBCAM</a>
+        <div class="label">Official Source</div>
+        <a href="http://www.bom.gov.au/fwo/IDN60232/IDN60232.059122.tbl.shtml" target="_blank" class="btn-bom">📊 BOM TABLE & PLOT</a>
     </div>
 
     <div class="footer-note">
-        <strong>Official BOM Levels:</strong> Minor: 6.5m | Mod: 10.5m | Major: 13.5m
+        <strong>BOM Flood Levels:</strong> Minor: 6.5m | Moderate: 10.5m | Major: 13.5m
     </div>
 
     <script>
+        // --- Configuration ---
+        const ELEVEN_LABS_KEY = "YOUR_API_KEY_HERE"; 
+        const VOICE_ID = "d459875348e4e0282d7e777bd143eb1bccb97aec5200219312d30412515574d1";
         const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRohfSEJSpuwFQNvpmrmnS0jfADxdhZ218WSZPfwXiUZHWNL0UWHSHKoJdtwZ89tRNwAjMiYc_GOGd2/pub?gid=0&single=true&output=csv";
         const DECK = 2.80;
-        let chart;
 
-        // SEED DATA from your official BOM table
+        let chart;
+        let lastHeight = 0;
+        let lastClearance = 0;
+        let currentStatus = "Safe";
+
+        // Seed data from your table
         const initialData = [
             {t: "28/12 22:18", h: 0.44}, {t: "29/12 03:50", h: 0.50}, {t: "29/12 22:18", h: 0.43},
             {t: "30/12 15:19", h: 0.41}, {t: "30/12 22:18", h: 0.42}, {t: "31/12 13:02", h: 0.40},
@@ -63,7 +74,7 @@
                 data: {
                     labels: initialData.map(d => d.t),
                     datasets: [{
-                        label: 'Water Height (m)',
+                        label: 'Water Level (m)',
                         borderColor: '#3498db',
                         backgroundColor: 'rgba(52, 152, 219, 0.1)',
                         data: initialData.map(d => d.h),
@@ -76,7 +87,7 @@
                     responsive: true,
                     maintainAspectRatio: false,
                     scales: {
-                        x: { title: { display: true, text: 'Date/Time' }, ticks: { maxTicksLimit: 8 } },
+                        x: { title: { display: true, text: 'Day/Time' } },
                         y: { beginAtZero: true, suggestedMax: 4, title: { display: true, text: 'Meters' } }
                     },
                     plugins: {
@@ -90,6 +101,37 @@
             });
         }
 
+        async function speak() {
+            const btn = document.getElementById('voice-btn');
+            btn.innerText = "⌛ GENERATING REPORT...";
+            btn.disabled = true;
+
+            const text = `Bellbrook Bridge report. The river height is ${lastHeight} meters. The bridge has ${lastClearance} meters of clearance. The status is currently ${currentStatus}.`;
+
+            try {
+                const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${VOICE_ID}`, {
+                    method: 'POST',
+                    headers: { 'xi-api-key': ELEVEN_LABS_KEY, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        text: text,
+                        model_id: "eleven_monolingual_v1",
+                        voice_settings: { stability: 0.5, similarity_boost: 0.8 }
+                    })
+                });
+
+                if (!response.ok) throw new Error("API Error");
+
+                const blob = await response.blob();
+                const audio = new Audio(URL.createObjectURL(blob));
+                audio.play();
+                btn.innerText = "🔊 READ STATUS REPORT";
+                btn.disabled = false;
+            } catch (err) {
+                btn.innerText = "❌ VOICE ERROR (CHECK API KEY)";
+                btn.disabled = false;
+            }
+        }
+
         async function update() {
             try {
                 const res = await fetch(CSV_URL + "&cache=" + Date.now());
@@ -101,30 +143,33 @@
                 const timeStr = d[1];
 
                 if (!isNaN(bh)) {
-                    const cl = DECK - bh;
-                    document.getElementById("clearance").innerText = cl.toFixed(2) + "m";
+                    lastHeight = bh.toFixed(2);
+                    lastClearance = (DECK - bh).toFixed(2);
+                    document.getElementById("clearance").innerText = lastClearance + "m";
                     
                     const obsDate = new Date(timeStr);
                     const labelTime = !isNaN(obsDate.getTime()) ? obsDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', day:'numeric', month:'short'}) : timeStr;
                     document.getElementById("time").innerText = "Last Obs: " + labelTime;
 
-                    // Update banner
                     const banner = document.getElementById("status-banner");
-                    if (bh >= 2.80) { banner.innerText = "🚫 BRIDGE CLOSED"; banner.className = "banner bg-danger"; }
-                    else if (bh >= 2.30) { banner.innerText = "⚠️ DANGER: NEAR DECK"; banner.className = "banner bg-warn"; }
-                    else { banner.innerText = "✅ SAFE TO CROSS"; banner.className = "banner bg-safe"; }
+                    if (bh >= 2.80) { 
+                        currentStatus = "Bridge Closed"; banner.innerText = "🚫 BRIDGE CLOSED"; banner.className = "banner bg-danger"; 
+                    } else if (bh >= 2.30) { 
+                        currentStatus = "Danger, river near deck"; banner.innerText = "⚠️ DANGER: NEAR DECK"; banner.className = "banner bg-warn"; 
+                    } else { 
+                        currentStatus = "Safe to cross"; banner.innerText = "✅ SAFE TO CROSS"; banner.className = "banner bg-safe"; 
+                    }
 
-                    // Add new live point to chart
                     if (chart.data.labels[chart.data.labels.length - 1] !== labelTime) {
                         chart.data.labels.push(labelTime);
                         chart.data.datasets[0].data.push(bh);
-                        if (chart.data.labels.length > 100) { chart.data.labels.shift(); chart.data.datasets[0].data.shift(); }
                         chart.update();
                     }
                 }
             } catch (e) { console.error(e); }
         }
 
+        document.getElementById('voice-btn').addEventListener('click', speak);
         initChart();
         update();
         setInterval(update, 300000); 
