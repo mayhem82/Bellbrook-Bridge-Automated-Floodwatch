@@ -30,7 +30,7 @@
 
     <div class="card">
         <div class="label">Live Tools</div>
-        <a id="cam-link" href="https://prospectsstorageaccount.blob.core.windows.net/prospectpublicimages/662/Overview.jpeg" target="_blank" class="btn btn-cam">📸 VIEW LIVE BRIDGE PHOTO</a>
+        <a id="cam-link" href="https://prospectsstorageaccount.blob.core.windows.net/prospectpublicimages/730/Overview.jpeg" target="_blank" class="btn btn-cam">📸 VIEW LIVE BELLBROOK PHOTO</a>
         <a href="about.html" class="btn">ℹ️ ABOUT PROJECT / MISSION</a>
     </div>
 
@@ -86,7 +86,7 @@
 
         async function update() {
             // Update the camera link with a timestamp to ensure fresh image
-            document.getElementById("cam-link").href = "https://prospectsstorageaccount.blob.core.windows.net/prospectpublicimages/662/Overview.jpeg?t=" + Date.now();
+            document.getElementById("cam-link").href = "https://prospectsstorageaccount.blob.core.windows.net/prospectpublicimages/730/Overview.jpeg?t=" + Date.now();
 
             try {
                 const res = await fetch(CSV_URL + "&cache=" + Date.now());
