@@ -15,6 +15,7 @@
         
         .btn-audio { display: block; width: 100%; padding: 18px; background: #673ab7; color: white; text-align: center; border: none; border-radius: 12px; font-weight: bold; margin-bottom: 15px; cursor: pointer; font-size: 1.1rem; box-shadow: 0 4px 0 #4e2d8a; }
         .btn-audio:active { transform: translateY(2px); box-shadow: 0 2px 0 #4e2d8a; }
+        .btn-audio:disabled { background: #9575cd; cursor: not-allowed; }
         
         .btn-bom { display: block; width: 100%; padding: 15px; background: #003087; color: white; text-align: center; text-decoration: none; border-radius: 12px; font-weight: bold; box-sizing: border-box; }
         .footer-note { text-align: center; font-size: 0.7rem; color: #888; margin-top: 20px; border-top: 1px solid #ccc; padding-top: 10px; }
@@ -48,7 +49,7 @@
 
     <script>
         // --- Configuration ---
-        const ELEVEN_LABS_KEY = "YOUR_API_KEY_HERE"; 
+        const ELEVEN_LABS_KEY = "sk_172ce494ca211cdef2ba10cee54cc524014ed08f9224c629"; 
         const VOICE_ID = "d459875348e4e0282d7e777bd143eb1bccb97aec5200219312d30412515574d1";
         const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRohfSEJSpuwFQNvpmrmnS0jfADxdhZ218WSZPfwXiUZHWNL0UWHSHKoJdtwZ89tRNwAjMiYc_GOGd2/pub?gid=0&single=true&output=csv";
         const DECK = 2.80;
@@ -58,7 +59,7 @@
         let lastClearance = 0;
         let currentStatus = "Safe";
 
-        // Seed data from your table
+        // Seed data from your provided BOM table
         const initialData = [
             {t: "28/12 22:18", h: 0.44}, {t: "29/12 03:50", h: 0.50}, {t: "29/12 22:18", h: 0.43},
             {t: "30/12 15:19", h: 0.41}, {t: "30/12 22:18", h: 0.42}, {t: "31/12 13:02", h: 0.40},
@@ -93,7 +94,8 @@
                     plugins: {
                         annotation: {
                             annotations: {
-                                bridge: { type: 'line', yMin: 2.8, yMax: 2.8, borderColor: 'black', borderWidth: 3, label: { display: true, content: 'BRIDGE DECK (2.8m)', position: 'start', backgroundColor: 'black' }}
+                                bridge: { type: 'line', yMin: 2.8, yMax: 2.8, borderColor: 'black', borderWidth: 3, label: { display: true, content: 'BRIDGE DECK (2.8m)', position: 'start', backgroundColor: 'black' }},
+                                minor: { type: 'line', yMin: 6.5, yMax: 6.5, borderColor: 'orange', borderDash: [5, 5], label: { display: true, content: 'MINOR (6.5m)' }}
                             }
                         }
                     }
@@ -103,6 +105,7 @@
 
         async function speak() {
             const btn = document.getElementById('voice-btn');
+            const originalText = btn.innerText;
             btn.innerText = "⌛ GENERATING REPORT...";
             btn.disabled = true;
 
@@ -124,11 +127,13 @@
                 const blob = await response.blob();
                 const audio = new Audio(URL.createObjectURL(blob));
                 audio.play();
-                btn.innerText = "🔊 READ STATUS REPORT";
+                btn.innerText = originalText;
                 btn.disabled = false;
             } catch (err) {
-                btn.innerText = "❌ VOICE ERROR (CHECK API KEY)";
+                btn.innerText = "❌ VOICE ERROR";
+                console.error(err);
                 btn.disabled = false;
+                setTimeout(() => { btn.innerText = originalText; }, 3000);
             }
         }
 
