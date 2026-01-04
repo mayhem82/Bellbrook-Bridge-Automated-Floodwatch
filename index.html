@@ -11,7 +11,8 @@
         .label { font-size: 0.8rem; color: #666; font-weight: bold; text-transform: uppercase; }
         .val { font-size: 2.5rem; font-weight: 900; display: block; margin: 5px 0; }
         .bg-safe { background: #27ae60; } .bg-warn { background: #f39c12; } .bg-danger { background: #c0392b; }
-        iframe { width: 100%; height: 450px; border-radius: 12px; border: 1px solid #ccc; margin-top: 10px; }
+        .cam-container { width: 100%; border-radius: 12px; overflow: hidden; border: 1px solid #ccc; margin-top: 10px; background: #000; }
+        .cam-img { width: 100%; display: block; height: auto; min-height: 200px; }
         .footer-note { text-align: center; font-size: 0.7rem; color: #888; margin-top: 10px; }
     </style>
 </head>
@@ -32,29 +33,31 @@
     </div>
 
     <div class="card">
-        <div class="label">Live Rain Radar (Macleay Valley)</div>
-        <iframe src="https://www.rainviewer.com/map.html?loc=-30.82,152.52,8&type=radar&o=1&c=1&p=1&v=1&d=1&g=1&u=0&sl=1" frameborder="0"></iframe>
+        <div class="label">Live Gauge Camera</div>
+        <div class="cam-container">
+            <img id="gauge-cam" src="https://macleay.nsw.gov.au/files/assets/public/v/1/images/webcams/bellbrook.jpg" class="cam-img" alt="Live Gauge Camera">
+        </div>
     </div>
 
     <div class="footer-note">Data auto-refreshes every 5 minutes. Source: BOM/Council CSV.</div>
 
     <script>
         const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRohfSEJSpuwFQNvpmrmnS0jfADxdhZ218WSZPfwXiUZHWNL0UWHSHKoJdtwZ89tRNwAjMiYc_GOGd2/pub?gid=0&single=true&output=csv";
+        const CAM_URL = "https://macleay.nsw.gov.au/files/assets/public/v/1/images/webcams/bellbrook.jpg";
         const DECK = 2.80;
 
         async function update() {
             try {
+                // Update the Dashboard Data
                 const res = await fetch(CSV_URL + "&cache=" + Date.now());
                 const text = await res.text();
                 
-                // Quote cleaner: handles the quotes from the CSV so math and dates work
                 let raw = text.split(",");
                 let d = raw.map(item => item.replace(/"/g, "").trim());
 
-                const bh = parseFloat(d[0]); // Bellbrook Height
-                const bt = d[2];             // Bellbrook Trend
+                const bh = parseFloat(d[0]); 
+                const bt = d[2];             
                 
-                // Clearance Math
                 if (!isNaN(bh)) {
                     const cl = DECK - bh;
                     document.getElementById("clearance").innerText = cl.toFixed(2) + "m";
@@ -62,7 +65,6 @@
                     document.getElementById("b-trend").innerText = bt;
                 }
                 
-                // Date Formatting - handles the cleaned date string
                 const obsDate = new Date(d[1]);
                 if (!isNaN(obsDate.getTime())) {
                     document.getElementById("time").innerText = "Last Obs: " + obsDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
@@ -70,7 +72,6 @@
                     document.getElementById("time").innerText = "Last Obs: " + d[1]; 
                 }
 
-                // Banner Logic
                 const banner = document.getElementById("status-banner");
                 if (bh >= 2.80) {
                     banner.innerText = "🚫 BRIDGE CLOSED";
@@ -83,6 +84,9 @@
                     banner.className = "banner bg-safe";
                 }
 
+                // Force the Camera Image to refresh by adding a timestamp
+                document.getElementById("gauge-cam").src = CAM_URL + "?t=" + new Date().getTime();
+
             } catch (e) { 
                 console.error("Data error", e); 
                 document.getElementById("status-banner").innerText = "OFFLINE: CHECKING DATA...";
@@ -90,7 +94,7 @@
         }
 
         update();
-        setInterval(update, 300000); 
+        setInterval(update, 300000); // 5 minute refresh
     </script>
 </body>
 </html>
