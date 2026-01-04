@@ -5,55 +5,44 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>About - Bellbrook Bridge Watch</title>
     <style>
-        body { font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 10px; background: #eef2f5; color: #333; line-height: 1.5; }
+        body { font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 10px; background: #eef2f5; color: #333; line-height: 1.6; }
         .card { background: white; border-radius: 12px; padding: 25px; margin-bottom: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
         h2 { margin-top: 0; color: #34495e; border-bottom: 2px solid #eef2f5; padding-bottom: 10px; }
-        .btn { display: block; width: 100%; padding: 15px; background: #34495e; color: white; text-align: center; text-decoration: none; border-radius: 12px; font-weight: bold; margin-bottom: 20px; box-sizing: border-box; }
-        .btn-back { background: #7f8c8d; }
-        .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 20px 0; }
-        .stat-item { background: #f8f9fa; padding: 10px; border-radius: 8px; text-align: center; border: 1px solid #eee; }
-        .stat-label { font-size: 0.7rem; color: #666; text-transform: uppercase; font-weight: bold; }
-        .stat-val { font-weight: bold; display: block; }
-        .important { color: #c0392b; font-weight: bold; }
+        .btn { display: block; width: 100%; padding: 15px; background: #7f8c8d; color: white; text-align: center; text-decoration: none; border-radius: 12px; font-weight: bold; margin-bottom: 20px; box-sizing: border-box; }
+        .disclaimer-text { font-size: 0.75rem; color: #666; text-align: justify; border-top: 1px solid #eee; pt: 15px; margin-top: 20px; }
+        p { margin-bottom: 15px; }
     </style>
 </head>
 <body>
 
-    <a href="index.html" class="btn btn-back">← BACK TO LIVE DATA</a>
+    <a href="index.html" class="btn">← BACK TO LIVE DATA</a>
 
     <div class="card">
-        <h2>Project Mission</h2>
-        <p>This dashboard was created to provide the Bellbrook community with a simple, mobile-first way to check bridge accessibility during rain events.</p>
-        
-        <p>By automating the data from the river gauges, we remove the guesswork of calculating clearance manually from height tables.</p>
+        <h2>The Mission</h2>
+        <p>This project exists for one reason: to give the Bellbrook community a clear, immediate answer to "Can I cross the bridge?" during high-water events.</p>
+        <p>While official data exists, it is often buried in tables or requires manual calculation. This tool automates that process to save time when it matters most.</p>
     </div>
 
     <div class="card">
-        <h2>Bridge Reference</h2>
-        <div class="stat-grid">
-            <div class="stat-item">
-                <span class="stat-label">Deck Height</span>
-                <span class="stat-val">2.80m</span>
-            </div>
-            <div class="stat-item">
-                <span class="stat-label">Source Gauge</span>
-                <span class="stat-val">Bellbrook</span>
-            </div>
+        <h2>My Journey Building It</h2>
+        <p>Living in an area where the bridge is our lifeline, I realized that checking river heights was a repetitive chore for every family in the village. I started by tracking the gauge data manually, but soon realized I could build a "bridge-first" dashboard.</p>
+        <p>The journey involved teaching myself how to fetch live data from BOM and Council feeds, building a system to remember the history of the river (the trend graph), and designing a mobile-friendly interface that works even when phone reception is poor during a storm.</p>
+        <p>This is a labor of love for Bellbrook—built by a resident, for the residents.</p>
+    </div>
+
+    <div class="card">
+        <h2>Lawful Disclaimer</h2>
+        <div class="disclaimer-text">
+            <strong>1. No Warranty:</strong> This website is provided "as is" without any representations or warranties, express or implied. The creator makes no representations or warranties in relation to the accuracy or completeness of the data shown.
+            <br><br>
+            <strong>2. Not Official Advice:</strong> The information contained here is for general information purposes only. It does not constitute official flood warnings or safety advice. Users should always refer to the Bureau of Meteorology (BOM), the State Emergency Service (SES), and local Council road closure signs.
+            <br><br>
+            <strong>3. Limitation of Liability:</strong> The creator of this tool will not be liable for any loss, damage, or injury arising from the use of this information. Never drive through floodwaters regardless of what is displayed on this dashboard. If it is flooded, forget it.
         </div>
-        <p>Clearance is calculated as: <br><code>2.80m (Deck) - River Height = Clearance</code></p>
-        <p class="important">Note: Local debris or wave action can affect safety even if the data shows minor clearance.</p>
-    </div>
-
-    <div class="card">
-        <h2>Official Links</h2>
-        <a href="https://macleay.nsw.gov.au/My-community/Webcams/Bellbrook" target="_blank" class="btn">📸 Live Webcam</a>
-        <a href="https://www.kempsey.nsw.gov.au/Your-Council/Emergency-information/Road-closures" target="_blank" class="btn">🚧 Council Road Closures</a>
-        <a href="http://www.bom.gov.au/nsw/warnings/flood/macleayriver.shtml" target="_blank" class="btn">🌧️ BOM Flood Warnings</a>
     </div>
 
     <div style="text-align: center; font-size: 0.7rem; color: #999; padding: 20px;">
-        This is a private community tool. <br>
-        Built for Bellbrook. Updated Jan 2026.
+        © 2026 Bellbrook Community Project
     </div>
 
 </body>
