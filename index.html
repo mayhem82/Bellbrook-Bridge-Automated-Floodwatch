@@ -39,12 +39,11 @@
     </div>
 
     <div class="card">
-        <div class="label">Live Rain Radar (Zoom Earth)</div>
-        <iframe src="https://zoom.earth/maps/radar/#view=-30.82,152.51,9z/model=icon"></iframe>
+        <div class="label">Live Rain Radar (Macleay Valley)</div>
+        <iframe src="https://www.rainviewer.com/map.html?loc=-30.82,152.52,9&type=radar&o=1&c=1&p=1&v=1&d=1&g=1&u=0" frameborder="0"></iframe>
     </div>
 
     <script>
-        // Your specific Google Sheet CSV link
         const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRohfSEJSpuwFQNvpmrmnS0jfADxdhZ218WSZPfwXiUZHWNL0UWHSHKoJdtwZ89tRNwAjMiYc_GOGd2/pub?gid=0&single=true&output=csv";
         const DECK = 2.80;
 
@@ -52,7 +51,10 @@
             try {
                 const res = await fetch(CSV_URL + "&cache=" + Date.now());
                 const text = await res.text();
-                const d = text.split(",");
+                
+                // Quote cleaner: removes quotes so numbers and dates work
+                let raw = text.split(",");
+                let d = raw.map(item => item.replace(/"/g, "").trim());
 
                 const bh = parseFloat(d[0]);
                 const bt = d[2];
@@ -88,7 +90,7 @@
         }
 
         update();
-        setInterval(update, 300000); // Auto-refresh every 5 mins
+        setInterval(update, 300000); 
     </script>
 </body>
 </html>
