@@ -13,6 +13,11 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@2.1.0"></script>
     
+    <title>About | Bellbrook Bridge Watch</title>
+    <meta name="description" content="Background, mission, and safety notes for Bellbrook Bridge Watch.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 10px; background: #eef2f5; color: #333; }
         .banner { padding: 20px; border-radius: 12px; margin-bottom: 10px; text-align: center; font-weight: bold; color: white; font-size: 1.4rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
@@ -35,9 +40,46 @@
         canvas { width: 100% !important; height: 350px !important; }
         
         .verify-text { font-size: 0.75rem; color: #7f8c8d; font-style: italic; margin-top: 10px; }
+        :root {
+            --bg: #0f172a;
+            --card: #111827;
+            --muted: #94a3b8;
+            --border: #1e293b;
+            --accent: #38bdf8;
+            --text: #e2e8f0;
+            --shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+        }
+        * { box-sizing: border-box; }
+        body { margin: 0; font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: radial-gradient(circle at 20% 20%, #111827, #0b1222 55%), #0b1222; color: var(--text); }
+        .page { max-width: 860px; margin: 0 auto; padding: 32px 18px 80px; }
+        header { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+        .brand { display: flex; align-items: center; gap: 12px; }
+        .brand-icon { width: 44px; height: 44px; border-radius: 12px; background: linear-gradient(135deg, #2563eb, #22d3ee); display: grid; place-items: center; font-weight: 800; color: #e0f2fe; box-shadow: var(--shadow); }
+        h1 { margin: 0; letter-spacing: -0.02em; }
+        a { color: inherit; text-decoration: none; }
+        .link-btn { display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--border); background: rgba(255,255,255,0.04); color: var(--text); padding: 10px 14px; border-radius: 12px; font-weight: 600; }
+        .card { background: linear-gradient(145deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); border: 1px solid var(--border); border-radius: 16px; padding: 20px; margin-top: 16px; box-shadow: var(--shadow); }
+        .card h2 { margin-top: 0; margin-bottom: 8px; letter-spacing: -0.01em; }
+        .card p { color: var(--muted); line-height: 1.7; }
+        ul { color: var(--muted); line-height: 1.7; padding-left: 18px; }
+        .pill { display: inline-flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 999px; border: 1px solid rgba(191, 219, 254, 0.35); background: rgba(37, 99, 235, 0.12); color: #bfdbfe; font-weight: 700; }
+        .grid { display: grid; gap: 12px; }
+        .muted { color: var(--muted); }
+        footer { margin-top: 24px; color: var(--muted); text-align: center; }
     </style>
 </head>
 <body>
+    <div class="page">
+        <header>
+            <div class="brand">
+                <div class="brand-icon">BW</div>
+                <div>
+                    <h1>About this project</h1>
+                    <div class="muted">Bellbrook Bridge Watch · Community reference</div>
+                </div>
+            </div>
+            <a class="link-btn" href="index.html">⬅️ Back to live view</a>
+        </header>
 
     <div id="status-banner" class="banner bg-safe">UPDATING LIVE DATA...</div>
 
@@ -74,11 +116,25 @@
             <button id="btn-confirm-ack" class="btn-confirm">I UNDERSTAND</button>
         </div>
     </div>
+        <section class="card">
+            <div class="pill">Mission</div>
+            <h2>Why Bellbrook Bridge Watch exists</h2>
+            <p>During fast-moving rain events, neighbours needed a quick snapshot: <strong>“Is the bridge clear to cross?”</strong> This site displays the latest river height at Bellbrook Bridge, calculates clearance against the 2.80 m deck, and surfaces official links so you can validate conditions independently.</p>
+        </section>
 
     <script>
         const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRohfSEJSpuwFQNvpmrmnS0jfADxdhZ218WSZPfwXiUZHWNL0UWHSHKoJdtwZ89tRNwAjMiYc_GOGd2/pub?gid=0&single=true&output=csv";
         const DECK = 2.80;
         let lastHeight = 0, lastClearance = 0, currentStatus = "Checking...", lastTime = "", hasAcknowledged = false;
+        <section class="grid">
+            <div class="card">
+                <h2>How data is sourced</h2>
+                <ul>
+                    <li>River height is read from a published Google Sheets CSV feed maintained by the project.</li>
+                    <li>The deck reference is fixed at <strong>2.80 m</strong>; clearance = deck – river height.</li>
+                    <li>The chart and status refresh every 5 minutes when the CSV is reachable.</li>
+                </ul>
+            </div>
 
         async function update() {
             try {
@@ -99,17 +155,40 @@
                 }
             } catch (e) { console.error(e); }
         }
+            <div class="card">
+                <h2>How to interpret the status</h2>
+                <ul>
+                    <li><strong>Open:</strong> Water is well below deck height.</li>
+                    <li><strong>Elevated:</strong> Rising water—monitor closely.</li>
+                    <li><strong>Near deck:</strong> Dangerous; water is approaching the deck.</li>
+                    <li><strong>Closed:</strong> Water at or above deck height—do not cross.</li>
+                </ul>
+            </div>
 
         document.getElementById('report-trigger').addEventListener('click', () => {
             if (!hasAcknowledged) document.getElementById('ack-modal').style.display = 'block';
             else generateReport();
         });
+            <div class="card">
+                <h2>Important safety notes</h2>
+                <ul>
+                    <li>This is a community information project, not an official directive.</li>
+                    <li>Always check multiple sources (e.g., SES, BOM) before travelling.</li>
+                    <li>Local conditions can change faster than the refresh interval.</li>
+                    <li>If in doubt, choose safety and avoid crossing.</li>
+                </ul>
+            </div>
 
         document.getElementById('btn-confirm-ack').addEventListener('click', () => {
             hasAcknowledged = true;
             document.getElementById('ack-modal').style.display = 'none';
             generateReport();
         });
+            <div class="card">
+                <h2>Contact & feedback</h2>
+                <p class="muted">If you see data that looks incorrect or have ideas to improve the site, please share feedback with the local community lead so we can keep the tool useful and reliable.</p>
+            </div>
+        </section>
 
         function generateReport() {
             const report = `🌊 Bellbrook Bridge Update\nStatus: ${currentStatus.toUpperCase()}\nRiver: ${lastHeight}m | Clearance: ${lastClearance}m\nObserved: ${lastTime}\n\nLive View: ${window.location.href}`;
@@ -128,5 +207,7 @@
         update();
         setInterval(update, 300000); 
     </script>
+        <footer>Stay safe, look after neighbours, and follow official emergency advice.</footer>
+    </div>
 </body>
 </html>
