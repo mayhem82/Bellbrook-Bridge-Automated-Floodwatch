@@ -10,30 +10,32 @@
         body { font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 10px; background: #eef2f5; }
         .banner { padding: 20px; border-radius: 12px; margin-bottom: 10px; text-align: center; font-weight: bold; color: white; font-size: 1.4rem; }
         .card { background: white; border-radius: 12px; padding: 20px; margin-bottom: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        .label { font-size: 0.8rem; color: #666; font-weight: bold; text-transform: uppercase; }
+        .label { font-size: 0.8rem; color: #666; font-weight: bold; text-transform: uppercase; margin-bottom: 5px; }
         .bg-safe { background: #27ae60; } .bg-warn { background: #f39c12; } .bg-danger { background: #c0392b; }
         
-        /* New Button Styles */
-        .btn-report { display: block; width: 100%; padding: 18px; background: #007bff; color: white; text-align: center; border: none; border-radius: 12px; font-weight: bold; margin-bottom: 15px; cursor: pointer; font-size: 1.1rem; box-shadow: 0 4px 0 #0056b3; }
+        .btn-report { display: block; width: 100%; padding: 18px; background: #007bff; color: white; text-align: center; border: none; border-radius: 12px; font-weight: bold; margin-bottom: 10px; cursor: pointer; font-size: 1.1rem; box-shadow: 0 4px 0 #0056b3; }
         .btn-report:active { transform: translateY(2px); box-shadow: 0 2px 0 #0056b3; }
         
-        .report-box { display: none; background: #f9f9f9; border: 1px solid #ddd; padding: 15px; border-radius: 8px; margin-top: 10px; white-space: pre-wrap; font-family: monospace; font-size: 0.9rem; text-align: left; }
+        .report-box { display: none; background: #f9f9f9; border: 1px dashed #bbb; padding: 15px; border-radius: 8px; margin-top: 10px; white-space: pre-wrap; font-family: monospace; font-size: 0.85rem; text-align: left; }
         
-        .btn-bom { display: block; width: 100%; padding: 15px; background: #003087; color: white; text-align: center; text-decoration: none; border-radius: 12px; font-weight: bold; box-sizing: border-box; }
-        .footer-share { text-align: center; margin-top: 20px; padding: 10px; }
-        .btn-share-footer { background: #4267B2; color: white; border: none; padding: 10px 20px; border-radius: 20px; cursor: pointer; font-weight: bold; }
+        .link-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+        .btn-link { display: block; padding: 12px; background: #f0f4f8; color: #003087; text-align: center; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 0.8rem; border: 1px solid #ccd6e0; }
+        .btn-link:hover { background: #e2eaf1; }
+
+        .btn-share-main { background: #4267B2; color: white; border: none; width: 100%; padding: 15px; border-radius: 12px; cursor: pointer; font-weight: bold; margin-top: 10px; }
         canvas { width: 100% !important; height: 320px !important; }
     </style>
 </head>
 <body>
 
-    <div id="status-banner" class="banner bg-safe">LOADING DATA...</div>
+    <div id="status-banner" class="banner bg-safe">LOADING LIVE DATA...</div>
 
     <div class="card" style="text-align: center;">
         <button id="report-btn" class="btn-report">📝 GENERATE REPORT</button>
         <div id="report-text" class="report-box"></div>
+        <button id="share-btn" class="btn-share-main" style="display:none;">📤 SHARE TO FB / MESSENGER</button>
         
-        <div class="label" style="margin-top: 15px;">Bridge Clearance (Deck: 2.80m)</div>
+        <div class="label" style="margin-top: 15px;">Current Bridge Clearance</div>
         <div id="clearance" style="font-size: 3.5rem; font-weight: 900;">--.--m</div>
         <div id="time" style="font-size: 0.8rem; color: #999;">Waiting for update...</div>
     </div>
@@ -44,12 +46,15 @@
     </div>
 
     <div class="card">
-        <div class="label">Official Source</div>
-        <a href="http://www.bom.gov.au/fwo/IDN60232/IDN60232.059122.tbl.shtml" target="_blank" class="btn-bom">📊 BOM TABLE & PLOT</a>
-    </div>
-
-    <div class="footer-share">
-        <button id="share-footer-btn" class="btn-share-footer">🔗 SHARE TO FB / MESSENGER</button>
+        <div class="label">Essential Community Links</div>
+        <div class="link-grid">
+            <a href="https://www.kempsey.nsw.gov.au/Your-Council/Emergency-information/Road-closures" target="_blank" class="btn-link">Council Road Closures</a>
+            <a href="http://www.bom.gov.au/nsw/warnings/flood/macleayriver.shtml" target="_blank" class="btn-link">BOM Flood Warnings</a>
+            <a href="https://www.ses.nsw.gov.au/regions/macleay/" target="_blank" class="btn-link">SES Macleay Region</a>
+            <a href="https://www.livetraffic.com/" target="_blank" class="btn-link">Live Traffic NSW</a>
+            <a href="http://www.bom.gov.au/fwo/IDN60232/IDN60232.059122.tbl.shtml" target="_blank" class="btn-link">BOM Official Table</a>
+            <a href="https://www.facebook.com/groups/bellbrookcommunity/" target="_blank" class="btn-link">Bellbrook Community FB</a>
+        </div>
     </div>
 
     <script>
@@ -61,53 +66,20 @@
         let currentStatus = "Checking...";
         let lastTime = "";
 
-        // --- Generate & Share Report ---
         function getReportString() {
-            return `🌊 Bellbrook Bridge Status Report\n` +
-                   `----------------------------\n` +
+            return `🌊 Bellbrook Bridge Update\n` +
                    `Status: ${currentStatus.toUpperCase()}\n` +
-                   `River Height: ${lastHeight}m\n` +
-                   `Clearance: ${lastClearance}m\n` +
-                   `As of: ${lastTime}\n\n` +
-                   `Check live: ${window.location.href}`;
+                   `River: ${lastHeight}m | Clearance: ${lastClearance}m\n` +
+                   `Observed: ${lastTime}\n` +
+                   `View Live: ${window.location.href}`;
         }
 
-        async function handleShare() {
-            const shareData = {
-                title: 'Bellbrook Bridge Watch',
-                text: getReportString(),
-                url: window.location.href
-            };
-
-            if (navigator.share) {
-                try {
-                    await navigator.share(shareData);
-                } catch (err) { console.log('Share cancelled'); }
-            } else {
-                // Fallback for desktop: Open Facebook Share Dialog
-                const fbUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`;
-                window.open(fbUrl, '_blank');
-            }
-        }
-
-        document.getElementById('report-btn').addEventListener('click', () => {
-            const box = document.getElementById('report-text');
-            box.innerText = getReportString();
-            box.style.display = "block";
-            // Automatically trigger share menu when report is generated
-            handleShare();
-        });
-
-        document.getElementById('share-footer-btn').addEventListener('click', handleShare);
-
-        // --- Data Handling ---
         async function update() {
             try {
                 const res = await fetch(CSV_URL + "&cache=" + Date.now());
                 const text = await res.text();
                 let raw = text.split(",");
                 let d = raw.map(item => item.replace(/"/g, "").trim());
-
                 const bh = parseFloat(d[0]); 
                 lastTime = d[1];
 
@@ -129,21 +101,31 @@
             } catch (e) { console.error(e); }
         }
 
-        // Initialize
-        const initialData = [
-            {t: "28/12 22:18", h: 0.44}, {t: "29/12 03:50", h: 0.50}, {t: "29/12 22:18", h: 0.43},
-            {t: "30/12 15:19", h: 0.41}, {t: "30/12 22:18", h: 0.42}, {t: "31/12 13:02", h: 0.40},
-            {t: "31/12 22:18", h: 0.40}, {t: "01/01 10:18", h: 0.39}, {t: "01/01 22:18", h: 0.39},
-            {t: "02/01 13:18", h: 0.38}, {t: "02/01 22:18", h: 0.39}, {t: "03/01 12:58", h: 0.38},
-            {t: "03/01 22:19", h: 0.39}, {t: "04/01 07:19", h: 0.40}, {t: "04/01 19:19", h: 0.41}
-        ];
+        document.getElementById('report-btn').addEventListener('click', () => {
+            const box = document.getElementById('report-text');
+            box.innerText = getReportString();
+            box.style.display = "block";
+            document.getElementById('share-btn').style.display = "block";
+        });
 
+        document.getElementById('share-btn').addEventListener('click', async () => {
+            if (navigator.share) {
+                try {
+                    await navigator.share({ title: 'Bellbrook Bridge Watch', text: getReportString(), url: window.location.href });
+                } catch (err) { }
+            } else {
+                window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`, '_blank');
+            }
+        });
+
+        // Simple Chart Init
+        const initialData = [{t: "04/01 07:19", h: 0.40}, {t: "04/01 19:19", h: 0.41}];
         const ctx = document.getElementById('floodChart').getContext('2d');
         new Chart(ctx, {
             type: 'line',
             data: {
                 labels: initialData.map(d => d.t),
-                datasets: [{ label: 'Water Level (m)', borderColor: '#3498db', data: initialData.map(d => d.h), fill: true, tension: 0.3 }]
+                datasets: [{ label: 'Water Level (m)', borderColor: '#3498db', data: initialData.map(d => d.h), fill: true }]
             },
             options: { responsive: true, maintainAspectRatio: false }
         });
