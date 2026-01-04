@@ -30,7 +30,7 @@
 
     <div class="card">
         <div class="label">Live Tools</div>
-        <a id="cam-link" href="https://prospectsstorageaccount.blob.core.windows.net/prospectpublicimages/730/Overview.jpeg" target="_blank" class="btn btn-cam">📸 VIEW LIVE BELLBROOK PHOTO</a>
+        <a href="https://www.kempsey.nsw.gov.au/Your-Valley/Disaster-emergency/Flood-information-cameras/Flood-cameras" target="_blank" class="btn btn-cam">📸 VIEW LIVE BELLBROOK WEBCAM</a>
         <a href="about.html" class="btn">ℹ️ ABOUT PROJECT / MISSION</a>
     </div>
 
@@ -85,9 +85,6 @@
         }
 
         async function update() {
-            // Update the camera link with a timestamp to ensure fresh image
-            document.getElementById("cam-link").href = "https://prospectsstorageaccount.blob.core.windows.net/prospectpublicimages/730/Overview.jpeg?t=" + Date.now();
-
             try {
                 const res = await fetch(CSV_URL + "&cache=" + Date.now());
                 const text = await res.text();
