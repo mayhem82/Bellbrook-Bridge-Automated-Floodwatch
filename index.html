@@ -15,7 +15,6 @@
         .bg-safe { background: #27ae60; } .bg-warn { background: #f39c12; } .bg-danger { background: #c0392b; }
         .btn { display: block; width: 100%; padding: 15px; background: #34495e; color: white; text-align: center; text-decoration: none; border-radius: 12px; font-weight: bold; margin-top: 10px; box-sizing: border-box; }
         .footer-note { text-align: center; font-size: 0.7rem; color: #888; margin-top: 20px; border-top: 1px solid #ccc; padding-top: 10px; }
-        .disclaimer { font-size: 0.65rem; color: #999; text-align: justify; line-height: 1.3; margin-top: 10px; }
         canvas { width: 100% !important; height: 300px !important; }
     </style>
 </head>
@@ -30,7 +29,7 @@
     </div>
 
     <div class="card">
-        <div class="label">5-Day River Height Trend (m)</div>
+        <div class="label">7-Day River Height (Meters)</div>
         <canvas id="floodChart"></canvas>
     </div>
 
@@ -40,11 +39,7 @@
     </div>
 
     <div class="footer-note">
-        <strong>Bellbrook Automated Floodwatch</strong>
-        <div class="disclaimer">
-            <strong>BOM LEVELS:</strong> Minor: 6.5m | Mod: 10.5m | Major: 13.5m<br>
-            <strong>DISCLAIMER:</strong> Not an official warning. Data from BOM/Council. Never drive through floodwaters. SES: 132 500.
-        </div>
+        <strong>Official BOM Levels:</strong> Minor: 6.5m | Mod: 10.5m | Major: 13.5m
     </div>
 
     <script>
@@ -52,89 +47,47 @@
         const DECK = 2.80;
         let chart;
 
+        // SEED DATA from your official BOM table
+        const initialData = [
+            {t: "28/12 22:18", h: 0.44}, {t: "29/12 03:50", h: 0.50}, {t: "29/12 22:18", h: 0.43},
+            {t: "30/12 15:19", h: 0.41}, {t: "30/12 22:18", h: 0.42}, {t: "31/12 13:02", h: 0.40},
+            {t: "31/12 22:18", h: 0.40}, {t: "01/01 10:18", h: 0.39}, {t: "01/01 22:18", h: 0.39},
+            {t: "02/01 13:18", h: 0.38}, {t: "02/01 22:18", h: 0.39}, {t: "03/01 12:58", h: 0.38},
+            {t: "03/01 22:19", h: 0.39}, {t: "04/01 07:19", h: 0.40}, {t: "04/01 19:19", h: 0.41}
+        ];
+
         function initChart() {
             const ctx = document.getElementById('floodChart').getContext('2d');
             chart = new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels: [],
+                    labels: initialData.map(d => d.t),
                     datasets: [{
-                        label: 'River Height (m)',
+                        label: 'Water Height (m)',
                         borderColor: '#3498db',
                         backgroundColor: 'rgba(52, 152, 219, 0.1)',
-                        data: [],
+                        data: initialData.map(d => d.h),
                         fill: true,
-                        tension: 0.2,
-                        pointRadius: 2
+                        tension: 0.3,
+                        pointRadius: 3
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
                     scales: {
-                        x: { 
-                            title: { display: true, text: 'Time' },
-                            ticks: { maxTicksLimit: 10 }
-                        },
-                        y: { 
-                            beginAtZero: true, 
-                            suggestedMax: 8,
-                            title: { display: true, text: 'Height (m)' }
-                        }
+                        x: { title: { display: true, text: 'Date/Time' }, ticks: { maxTicksLimit: 8 } },
+                        y: { beginAtZero: true, suggestedMax: 4, title: { display: true, text: 'Meters' } }
                     },
                     plugins: {
                         annotation: {
                             annotations: {
-                                bridgeLine: {
-                                    type: 'line',
-                                    yMin: 2.8,
-                                    yMax: 2.8,
-                                    borderColor: 'black',
-                                    borderWidth: 3,
-                                    label: {
-                                        display: true,
-                                        content: 'BRIDGE DECK (2.8m)',
-                                        position: 'start',
-                                        backgroundColor: 'black'
-                                    }
-                                },
-                                minorLine: {
-                                    type: 'line',
-                                    yMin: 6.5,
-                                    yMax: 6.5,
-                                    borderColor: 'orange',
-                                    borderDash: [5, 5],
-                                    label: { display: true, content: 'MINOR (6.5m)', position: 'end' }
-                                }
+                                bridge: { type: 'line', yMin: 2.8, yMax: 2.8, borderColor: 'black', borderWidth: 3, label: { display: true, content: 'BRIDGE DECK (2.8m)', position: 'start', backgroundColor: 'black' }}
                             }
                         }
                     }
                 }
             });
-            loadHistory();
-        }
-
-        function saveHistory(height, time) {
-            let history = JSON.parse(localStorage.getItem('bellbrook_history_clean') || '[]');
-            // Only add if time is different from last entry
-            if (history.length > 0 && history[history.length - 1].time === time) return;
-            
-            history.push({ height, time });
-            if (history.length > 1500) history.shift(); // Keep ~5 days
-            
-            localStorage.setItem('bellbrook_history_clean', JSON.stringify(history));
-            updateChart(history);
-        }
-
-        function loadHistory() {
-            let history = JSON.parse(localStorage.getItem('bellbrook_history_clean') || '[]');
-            updateChart(history);
-        }
-
-        function updateChart(history) {
-            chart.data.labels = history.map(h => h.time);
-            chart.data.datasets[0].data = history.map(h => h.height);
-            chart.update();
         }
 
         async function update() {
@@ -154,22 +107,22 @@
                     const obsDate = new Date(timeStr);
                     const labelTime = !isNaN(obsDate.getTime()) ? obsDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', day:'numeric', month:'short'}) : timeStr;
                     document.getElementById("time").innerText = "Last Obs: " + labelTime;
-                    
-                    saveHistory(bh, labelTime);
 
+                    // Update banner
                     const banner = document.getElementById("status-banner");
-                    if (bh >= 2.80) {
-                        banner.innerText = "🚫 BRIDGE CLOSED";
-                        banner.className = "banner bg-danger";
-                    } else if (bh >= 2.30) {
-                        banner.innerText = "⚠️ DANGER: NEAR DECK";
-                        banner.className = "banner bg-warn";
-                    } else {
-                        banner.innerText = "✅ SAFE TO CROSS";
-                        banner.className = "banner bg-safe";
+                    if (bh >= 2.80) { banner.innerText = "🚫 BRIDGE CLOSED"; banner.className = "banner bg-danger"; }
+                    else if (bh >= 2.30) { banner.innerText = "⚠️ DANGER: NEAR DECK"; banner.className = "banner bg-warn"; }
+                    else { banner.innerText = "✅ SAFE TO CROSS"; banner.className = "banner bg-safe"; }
+
+                    // Add new live point to chart
+                    if (chart.data.labels[chart.data.labels.length - 1] !== labelTime) {
+                        chart.data.labels.push(labelTime);
+                        chart.data.datasets[0].data.push(bh);
+                        if (chart.data.labels.length > 100) { chart.data.labels.shift(); chart.data.datasets[0].data.shift(); }
+                        chart.update();
                     }
                 }
-            } catch (e) { console.error("Update error", e); }
+            } catch (e) { console.error(e); }
         }
 
         initChart();
