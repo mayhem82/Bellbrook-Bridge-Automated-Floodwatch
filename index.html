@@ -4,28 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bellbrook Bridge Watch</title>
-    
-    <meta property="og:title" content="Bellbrook Bridge Watch">
-    <meta property="og:description" content="Live bridge clearance and river trends for the Bellbrook community.">
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://your-site-url.com">
-    <meta property="og:image" content="https://your-site-url.com/preview-thumb.jpg">
-
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@2.1.0"></script>
     <style>
         body { font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 10px; background: #eef2f5; }
         .banner { padding: 20px; border-radius: 12px; margin-bottom: 10px; text-align: center; font-weight: bold; color: white; font-size: 1.4rem; }
         .card { background: white; border-radius: 12px; padding: 20px; margin-bottom: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        .label { font-size: 0.8rem; color: #666; font-weight: bold; text-transform: uppercase; }
+        .label { font-size: 0.8rem; color: #666; font-weight: bold; text-transform: uppercase; margin-bottom: 10px; display: block; }
         .bg-safe { background: #27ae60; } .bg-warn { background: #f39c12; } .bg-danger { background: #c0392b; }
         .btn { display: block; width: 100%; padding: 15px; background: #34495e; color: white; text-align: center; text-decoration: none; border-radius: 12px; font-weight: bold; margin-top: 10px; box-sizing: border-box; }
+        .cam-frame { width: 100%; border-radius: 8px; border: 1px solid #ddd; display: block; }
         .footer-note { text-align: center; font-size: 0.7rem; color: #888; margin-top: 20px; border-top: 1px solid #ccc; padding-top: 10px; }
-        .disclaimer { font-size: 0.65rem; color: #999; text-align: justify; line-height: 1.3; margin-top: 10px; }
         canvas { width: 100% !important; height: 300px !important; }
-        .link-text { color: #34495e; text-decoration: underline; font-weight: bold; }
     </style>
-</head>>
+</head>
 <body>
 
     <div id="status-banner" class="banner bg-safe">LOADING DATA...</div>
@@ -37,28 +29,26 @@
     </div>
 
     <div class="card">
+        <div class="label">Live Gauge Camera (Auto-refreshes)</div>
+        <img id="bridge-cam" src="https://prospectsstorageaccount.blob.core.windows.net/prospectpublicimages/662/Overview.jpeg" class="cam-frame" alt="Live Bridge Camera">
+    </div>
+
+    <div class="card">
         <div class="label">5-Day River Height Trend (m)</div>
         <canvas id="floodChart"></canvas>
     </div>
 
     <div class="card">
-        <div class="label">Information & Alerts</div>
         <a href="about.html" class="btn">ℹ️ ABOUT THIS PROJECT</a>
-        <div style="margin-top: 15px; text-align: center; font-size: 0.9rem;">
-            <a href="https://macleay.nsw.gov.au/My-community/Webcams/Bellbrook" target="_blank" class="link-text">View Live Gauge Camera 📸</a>
-        </div>
     </div>
 
     <div class="footer-note">
         <strong>Bellbrook Automated Floodwatch</strong>
-        <div class="disclaimer">
-            <strong>BOM LEVELS:</strong> Minor: 6.5m | Mod: 10.5m | Major: 13.5m<br>
-            <strong>DISCLAIMER:</strong> Not an official warning. Data from BOM/Council. Never drive through floodwaters. SES: 132 500.
-        </div>
     </div>
 
     <script>
         const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRohfSEJSpuwFQNvpmrmnS0jfADxdhZ218WSZPfwXiUZHWNL0UWHSHKoJdtwZ89tRNwAjMiYc_GOGd2/pub?gid=0&single=true&output=csv";
+        const CAM_URL = "https://prospectsstorageaccount.blob.core.windows.net/prospectpublicimages/662/Overview.jpeg";
         const DECK = 2.80;
         let chart;
 
@@ -66,39 +56,13 @@
             const ctx = document.getElementById('floodChart').getContext('2d');
             chart = new Chart(ctx, {
                 type: 'line',
-                data: {
-                    labels: [],
-                    datasets: [{
-                        label: 'River Height (m)',
-                        borderColor: '#3498db',
-                        backgroundColor: 'rgba(52, 152, 219, 0.1)',
-                        data: [],
-                        fill: true,
-                        tension: 0.2,
-                        pointRadius: 2
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        x: { ticks: { maxTicksLimit: 10 } },
-                        y: { beginAtZero: true, suggestedMax: 8 }
-                    },
-                    plugins: {
-                        annotation: {
-                            annotations: {
-                                bridgeLine: {
-                                    type: 'line', yMin: 2.8, yMax: 2.8, borderColor: 'black', borderWidth: 3,
-                                    label: { display: true, content: 'DECK (2.8m)', position: 'start', backgroundColor: 'black' }
-                                },
-                                minorLine: {
-                                    type: 'line', yMin: 6.5, yMax: 6.5, borderColor: 'orange', borderDash: [5, 5],
-                                    label: { display: true, content: 'MINOR (6.5m)', position: 'end' }
-                                }
-                            }
-                        }
-                    }
+                data: { labels: [], datasets: [{ label: 'River Height (m)', borderColor: '#3498db', data: [], fill: true, tension: 0.2, pointRadius: 2 }] },
+                options: { 
+                    responsive: true, maintainAspectRatio: false,
+                    scales: { y: { beginAtZero: true, suggestedMax: 8 } },
+                    plugins: { annotation: { annotations: {
+                        bridgeLine: { type: 'line', yMin: 2.8, yMax: 2.8, borderColor: 'black', borderWidth: 3, label: { display: true, content: 'DECK (2.8m)', position: 'start' } }
+                    }}}
                 }
             });
             loadHistory();
@@ -125,11 +89,13 @@
         }
 
         async function update() {
+            // Refresh Camera Image
+            document.getElementById("bridge-cam").src = CAM_URL + "?t=" + Date.now();
+
             try {
                 const res = await fetch(CSV_URL + "&cache=" + Date.now());
                 const text = await res.text();
-                let raw = text.split(",");
-                let d = raw.map(item => item.replace(/"/g, "").trim());
+                let d = text.split(",").map(item => item.replace(/"/g, "").trim());
                 const bh = parseFloat(d[0]); 
                 const timeStr = d[1];
 
@@ -145,13 +111,12 @@
                     else if (bh >= 2.30) { banner.innerText = "⚠️ DANGER: NEAR DECK"; banner.className = "banner bg-warn"; }
                     else { banner.innerText = "✅ SAFE TO CROSS"; banner.className = "banner bg-safe"; }
                 }
-            } catch (e) { console.error("Update error", e); }
+            } catch (e) { console.error(e); }
         }
 
         initChart();
         update();
-        setInterval(update, 300000); 
+        setInterval(update, 300000); // 5 minute refresh
     </script>
 </body>
 </html>
-
