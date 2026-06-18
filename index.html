@@ -35,11 +35,7 @@
         linear-gradient(180deg, #f5f8fb 0%, #e8f0f6 58%, #d7e6f1 100%);
     }
 
-    .shell {
-      width: min(1040px, 100%);
-      margin: 0 auto;
-      padding: 18px;
-    }
+    .shell { width: min(1040px, 100%); margin: 0 auto; padding: 18px; }
 
     .hero {
       position: relative;
@@ -62,36 +58,13 @@
       pointer-events: none;
     }
 
-    .kicker {
-      margin: 0 0 10px;
-      font-size: 0.78rem;
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
-      opacity: 0.82;
-      font-weight: 800;
-    }
+    .kicker { margin: 0 0 10px; font-size: 0.78rem; letter-spacing: 0.14em; text-transform: uppercase; opacity: 0.82; font-weight: 800; }
 
-    h1 {
-      margin: 0;
-      font-size: clamp(2rem, 6vw, 4.4rem);
-      line-height: 0.94;
-      letter-spacing: -0.06em;
-    }
+    h1 { margin: 0; font-size: clamp(2rem, 6vw, 4.4rem); line-height: 0.94; letter-spacing: -0.06em; }
 
-    .hero-sub {
-      max-width: 48rem;
-      margin: 14px 0 0;
-      color: rgba(255,255,255,0.84);
-      line-height: 1.55;
-      font-size: 1rem;
-    }
+    .hero-sub { max-width: 48rem; margin: 14px 0 0; color: rgba(255,255,255,0.84); line-height: 1.55; font-size: 1rem; }
 
-    .status-strip {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 10px;
-      margin-top: 18px;
-    }
+    .status-strip { display: grid; grid-template-columns: 1fr; gap: 10px; margin-top: 18px; }
 
     .status-banner {
       border: 1px solid rgba(255,255,255,0.24);
@@ -109,12 +82,7 @@
     .state-warn { background: linear-gradient(135deg, var(--warn), #f0a202); color: #201400; }
     .state-closed { background: linear-gradient(135deg, var(--closed), #e5483f); }
 
-    .grid {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 14px;
-      margin-top: 14px;
-    }
+    .grid { display: grid; grid-template-columns: 1fr; gap: 14px; margin-top: 14px; }
 
     .card {
       background: var(--panel);
@@ -125,73 +93,29 @@
       backdrop-filter: blur(8px);
     }
 
-    .metric-grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 12px;
-    }
+    .metric-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
 
-    .metric {
-      min-height: 124px;
-      border-radius: 20px;
-      padding: 16px;
-      border: 1px solid var(--line);
-      background: linear-gradient(180deg, white, rgba(255,255,255,0.7));
-    }
+    .metric { min-height: 124px; border-radius: 20px; padding: 16px; border: 1px solid var(--line); background: linear-gradient(180deg, white, rgba(255,255,255,0.7)); }
 
-    .metric.primary {
-      grid-column: 1 / -1;
-      min-height: 154px;
-      color: white;
-      background: linear-gradient(135deg, #10202f, #2166a5);
-      border: none;
-    }
+    .metric.primary { grid-column: 1 / -1; min-height: 154px; color: white; background: linear-gradient(135deg, #10202f, #2166a5); border: none; }
 
-    .label {
-      display: block;
-      margin-bottom: 6px;
-      color: var(--muted);
-      text-transform: uppercase;
-      font-size: 0.74rem;
-      letter-spacing: 0.1em;
-      font-weight: 850;
-    }
-
+    .label { display: block; margin-bottom: 6px; color: var(--muted); text-transform: uppercase; font-size: 0.74rem; letter-spacing: 0.1em; font-weight: 850; }
     .primary .label { color: rgba(255,255,255,0.72); }
 
-    .value {
-      font-size: clamp(2rem, 12vw, 5rem);
-      line-height: 0.96;
-      font-weight: 950;
-      letter-spacing: -0.07em;
-    }
+    .value { font-size: clamp(2rem, 12vw, 5rem); line-height: 0.96; font-weight: 950; letter-spacing: -0.07em; }
+    .metric:not(.primary) .value { font-size: clamp(1.55rem, 7vw, 3rem); color: var(--ink); }
 
-    .metric:not(.primary) .value {
-      font-size: clamp(1.55rem, 7vw, 3rem);
-      color: var(--ink);
-    }
-
-    .small-note {
-      margin: 9px 0 0;
-      color: var(--muted);
-      font-size: 0.88rem;
-      line-height: 1.45;
-    }
-
+    .small-note { margin: 9px 0 0; color: var(--muted); font-size: 0.88rem; line-height: 1.45; }
     .primary .small-note { color: rgba(255,255,255,0.72); }
 
-    .gauge-wrap {
-      display: grid;
-      grid-template-columns: 84px 1fr;
-      gap: 16px;
-      align-items: stretch;
-    }
+    .gauge-wrap { display: grid; grid-template-columns: 168px 1fr; gap: 16px; align-items: stretch; }
 
     .river-tube {
       position: relative;
       height: 332px;
+      width: 84px;
       border-radius: 999px;
-      overflow: hidden;
+      overflow: visible;
       background: linear-gradient(180deg, #f9fcff 0%, #e7f2fb 100%);
       border: 1px solid var(--line);
       box-shadow: inset 0 0 0 6px rgba(255,255,255,0.72);
@@ -211,17 +135,58 @@
       transition: height 700ms ease;
     }
 
-    .deck-line, .warn-line {
+    .water-callout {
+      position: absolute;
+      left: 92px;
+      top: 50%;
+      transform: translateY(-50%);
+      min-width: 70px;
+      padding: 6px 8px;
+      border-radius: 10px;
+      background: white;
+      border: 1px solid rgba(33, 102, 165, 0.28);
+      box-shadow: 0 8px 20px rgba(16, 32, 47, 0.12);
+      color: var(--water);
+      font-size: 0.68rem;
+      line-height: 1.12;
+      font-weight: 950;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      z-index: 5;
+      transition: top 700ms ease;
+    }
+
+    .water-callout::before {
+      content: "";
+      position: absolute;
+      left: -22px;
+      top: 50%;
+      width: 22px;
+      height: 2px;
+      background: var(--water);
+      transform: translateY(-50%);
+    }
+
+    .water-callout span {
+      display: block;
+      margin-top: 2px;
+      color: var(--ink);
+      font-size: 0.86rem;
+      letter-spacing: -0.02em;
+      text-transform: none;
+    }
+
+    .deck-line, .warn-line, .watch-line {
       position: absolute;
       left: 0;
       right: 0;
       height: 2px;
-      background: var(--closed);
       z-index: 2;
     }
 
-    .deck-line { top: 7%; }
+    .deck-line { top: 7%; background: var(--closed); }
     .warn-line { top: 23%; background: var(--warn); opacity: 0.84; }
+    .watch-line { top: 40%; background: var(--watch); opacity: 0.84; }
 
     .tube-label {
       position: absolute;
@@ -235,26 +200,15 @@
 
     .deck-line .tube-label { top: -8px; color: var(--closed); }
     .warn-line .tube-label { top: -8px; color: var(--warn); }
+    .watch-line .tube-label { top: -8px; color: var(--watch); }
 
-    .legend {
-      display: grid;
-      gap: 10px;
-      align-content: start;
-    }
+    .legend { display: grid; gap: 10px; align-content: start; }
 
-    .risk-item {
-      display: grid;
-      grid-template-columns: 12px 1fr;
-      gap: 10px;
-      align-items: start;
-      padding: 12px;
-      border: 1px solid var(--line);
-      border-radius: 16px;
-      background: white;
-    }
+    .risk-item { display: grid; grid-template-columns: 12px 1fr; gap: 10px; align-items: start; padding: 12px; border: 1px solid var(--line); border-radius: 16px; background: white; }
 
     .dot { width: 12px; height: 12px; border-radius: 999px; margin-top: 4px; }
     .dot.safe { background: var(--safe); }
+    .dot.watch { background: var(--watch); }
     .dot.warn { background: var(--warn); }
     .dot.closed { background: var(--closed); }
 
@@ -264,38 +218,13 @@
     .chart-card { min-height: 390px; }
     canvas { width: 100% !important; height: 310px !important; }
 
-    .tools {
-      display: grid;
-      gap: 10px;
-    }
+    .tools { display: grid; gap: 10px; }
 
-    .btn {
-      display: block;
-      width: 100%;
-      border: 0;
-      border-radius: 18px;
-      padding: 15px 16px;
-      background: #10202f;
-      color: white;
-      text-align: center;
-      text-decoration: none;
-      font: inherit;
-      font-weight: 900;
-      cursor: pointer;
-      min-height: 52px;
-    }
-
+    .btn { display: block; width: 100%; border: 0; border-radius: 18px; padding: 15px 16px; background: #10202f; color: white; text-align: center; text-decoration: none; font: inherit; font-weight: 900; cursor: pointer; min-height: 52px; }
     .btn.secondary { background: #2166a5; }
     .btn.light { background: white; color: var(--ink); border: 1px solid var(--line); }
 
-    .footer-note {
-      margin-top: 18px;
-      padding: 14px 4px 4px;
-      color: var(--muted);
-      font-size: 0.76rem;
-      line-height: 1.45;
-      text-align: center;
-    }
+    .footer-note { margin-top: 18px; padding: 14px 4px 4px; color: var(--muted); font-size: 0.76rem; line-height: 1.45; text-align: center; }
 
     @media (min-width: 760px) {
       .hero { padding: 32px; }
@@ -346,19 +275,22 @@
         <div class="gauge-wrap">
           <div class="river-tube" aria-hidden="true">
             <div class="deck-line"><span class="tube-label">DECK 2.80 m</span></div>
-            <div class="warn-line"><span class="tube-label">WATCH 2.30 m</span></div>
+            <div class="warn-line"><span class="tube-label">NEAR DECK 2.30 m</span></div>
+            <div class="watch-line"><span class="tube-label">WATCH 1.80 m</span></div>
             <div id="water-fill" class="water-fill"></div>
+            <div id="water-callout" class="water-callout">Water level<span id="water-callout-value">--.-- m</span></div>
           </div>
           <div class="legend">
-            <div class="risk-item"><span class="dot safe"></span><div><div class="risk-title">SAFE BAND</div><div class="risk-copy">Below 2.30 m. Check conditions, debris, rain, and road surface.</div></div></div>
+            <div class="risk-item"><span class="dot safe"></span><div><div class="risk-title">LOW WATER</div><div class="risk-copy">Below 1.80 m. More than 1 m below deck.</div></div></div>
+            <div class="risk-item"><span class="dot watch"></span><div><div class="risk-title">WATCH</div><div class="risk-copy">1.80 m to 2.29 m. Water is within 1 m of the deck.</div></div></div>
             <div class="risk-item"><span class="dot warn"></span><div><div class="risk-title">NEAR DECK</div><div class="risk-copy">2.30 m to 2.79 m. Crossing risk rises quickly.</div></div></div>
-            <div class="risk-item"><span class="dot closed"></span><div><div class="risk-title">DECK REACHED</div><div class="risk-copy">2.80 m or higher. Treat bridge as closed.</div></div></div>
+            <div class="risk-item"><span class="dot closed"></span><div><div class="risk-title">DECK CONTACT</div><div class="risk-copy">2.80 m or higher. Water is at deck level.</div></div></div>
           </div>
         </div>
       </div>
 
       <div class="card chart-card">
-        <span class="label">River height trend</span>
+        <span class="label">Observed readings on this device</span>
         <canvas id="floodChart"></canvas>
         <p class="small-note">Trend history is stored locally on this device from observations seen by this browser.</p>
       </div>
@@ -411,6 +343,15 @@
             legend: { display: false },
             annotation: {
               annotations: {
+                watchLowLine: {
+                  type: "line",
+                  yMin: 1.80,
+                  yMax: 1.80,
+                  borderColor: "#2d6cdf",
+                  borderWidth: 2,
+                  borderDash: [6, 6],
+                  label: { display: true, content: "WATCH 1.80 m", position: "start" }
+                },
                 watchLine: {
                   type: "line",
                   yMin: WATCH,
@@ -418,7 +359,7 @@
                   borderColor: "#c77700",
                   borderWidth: 2,
                   borderDash: [6, 6],
-                  label: { display: true, content: "WATCH 2.30 m", position: "start" }
+                  label: { display: true, content: "NEAR DECK 2.30 m", position: "start" }
                 },
                 bridgeLine: {
                   type: "line",
@@ -516,16 +457,16 @@
       const banner = document.getElementById("status-banner");
       banner.classList.remove("state-safe", "state-watch", "state-warn", "state-closed");
       if (height >= DECK) {
-        banner.textContent = "BRIDGE CLOSED — WATER AT OR ABOVE DECK";
+        banner.textContent = "DECK CONTACT — WATER AT OR ABOVE DECK";
         banner.classList.add("state-closed");
       } else if (height >= WATCH) {
         banner.textContent = "DANGER — WATER NEAR DECK";
         banner.classList.add("state-warn");
       } else if (height >= 1.80) {
-        banner.textContent = "WATCH — RIVER RISING / CHECK CAMERA";
+        banner.textContent = "WATCH — WATER WITHIN 1 m OF DECK";
         banner.classList.add("state-watch");
       } else {
-        banner.textContent = "SAFE BAND — CHECK CONDITIONS";
+        banner.textContent = "LOW WATER — CHECK CONDITIONS";
         banner.classList.add("state-safe");
       }
     }
@@ -549,6 +490,7 @@
         const relative = bh - DECK;
         const time = formatObservationTime(obs.time);
         const fillPct = Math.max(3, Math.min(100, (bh / DECK) * 93));
+        const calloutTop = Math.max(8, Math.min(92, 100 - fillPct));
 
         document.getElementById("clearance").textContent = clearance.toFixed(2) + " m";
         document.getElementById("water-level").textContent = bh.toFixed(2) + " m";
@@ -556,6 +498,8 @@
         document.getElementById("time").textContent = "Last observation: " + time.label;
         document.getElementById("clearance-note").textContent = clearance >= 0 ? "Water remains below the 2.80 m deck reference." : "Water is above the 2.80 m deck reference.";
         document.getElementById("water-fill").style.height = fillPct + "%";
+        document.getElementById("water-callout").style.top = calloutTop + "%";
+        document.getElementById("water-callout-value").textContent = bh.toFixed(2) + " m";
 
         setStatus(bh);
         setDataAge(time.date);
