@@ -1,130 +1,576 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bellbrook Bridge Watch</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@2.1.0"></script>
-    <style>
-        body { font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 10px; background: #eef2f5; }
-        .banner { padding: 20px; border-radius: 12px; margin-bottom: 10px; text-align: center; font-weight: bold; color: white; font-size: 1.4rem; }
-        .card { background: white; border-radius: 12px; padding: 20px; margin-bottom: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        .label { font-size: 0.8rem; color: #666; font-weight: bold; text-transform: uppercase; margin-bottom: 5px; display: block; }
-        .bg-safe { background: #27ae60; } .bg-warn { background: #f39c12; } .bg-danger { background: #c0392b; }
-        .btn { display: block; width: 100%; padding: 15px; background: #34495e; color: white; text-align: center; text-decoration: none; border-radius: 12px; font-weight: bold; margin-top: 10px; box-sizing: border-box; }
-        .btn-cam { background: #2980b9; }
-        .footer-note { text-align: center; font-size: 0.7rem; color: #888; margin-top: 20px; border-top: 1px solid #ccc; padding-top: 10px; }
-        canvas { width: 100% !important; height: 300px !important; }
-        
-        /* New styling for the water level display */
-        .water-level-box { margin-top: 10px; border-top: 1px solid #eee; padding-top: 10px; }
-        .water-val { font-size: 1.2rem; font-weight: 800; color: #2c3e50; }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bellbrook Bridge Floodwatch</title>
+  <meta name="description" content="Bellbrook Bridge live floodwatch dashboard using a published river-height feed and bridge-deck clearance calculation." />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@2.1.0"></script>
+  <style>
+    :root {
+      --deck: 2.80;
+      --ink: #10202f;
+      --muted: #66788a;
+      --panel: rgba(255, 255, 255, 0.94);
+      --line: rgba(16, 32, 47, 0.12);
+      --safe: #17834c;
+      --watch: #2d6cdf;
+      --warn: #c77700;
+      --closed: #b42318;
+      --sky: #dcecf8;
+      --water: #2166a5;
+      --shadow: 0 18px 50px rgba(16, 32, 47, 0.16);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at top left, rgba(33, 102, 165, 0.22), transparent 30rem),
+        linear-gradient(180deg, #f5f8fb 0%, #e8f0f6 58%, #d7e6f1 100%);
+    }
+
+    .shell {
+      width: min(1040px, 100%);
+      margin: 0 auto;
+      padding: 18px;
+    }
+
+    .hero {
+      position: relative;
+      overflow: hidden;
+      border-radius: 28px;
+      padding: 22px;
+      background:
+        linear-gradient(135deg, rgba(16, 32, 47, 0.92), rgba(24, 84, 128, 0.88)),
+        linear-gradient(180deg, #17364f, #0f2435);
+      color: white;
+      box-shadow: var(--shadow);
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: auto -10% -42% -10%;
+      height: 62%;
+      background: radial-gradient(ellipse at center, rgba(255,255,255,0.18), transparent 64%);
+      pointer-events: none;
+    }
+
+    .kicker {
+      margin: 0 0 10px;
+      font-size: 0.78rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      opacity: 0.82;
+      font-weight: 800;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(2rem, 6vw, 4.4rem);
+      line-height: 0.94;
+      letter-spacing: -0.06em;
+    }
+
+    .hero-sub {
+      max-width: 48rem;
+      margin: 14px 0 0;
+      color: rgba(255,255,255,0.84);
+      line-height: 1.55;
+      font-size: 1rem;
+    }
+
+    .status-strip {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .status-banner {
+      border: 1px solid rgba(255,255,255,0.24);
+      border-radius: 18px;
+      padding: 16px;
+      font-size: clamp(1.35rem, 5vw, 2.4rem);
+      font-weight: 950;
+      letter-spacing: -0.04em;
+      text-align: center;
+      background: rgba(255,255,255,0.14);
+    }
+
+    .state-safe { background: linear-gradient(135deg, var(--safe), #20a862); }
+    .state-watch { background: linear-gradient(135deg, var(--watch), #3d8bfd); }
+    .state-warn { background: linear-gradient(135deg, var(--warn), #f0a202); color: #201400; }
+    .state-closed { background: linear-gradient(135deg, var(--closed), #e5483f); }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 14px;
+      margin-top: 14px;
+    }
+
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      padding: 18px;
+      box-shadow: 0 10px 28px rgba(16, 32, 47, 0.08);
+      backdrop-filter: blur(8px);
+    }
+
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .metric {
+      min-height: 124px;
+      border-radius: 20px;
+      padding: 16px;
+      border: 1px solid var(--line);
+      background: linear-gradient(180deg, white, rgba(255,255,255,0.7));
+    }
+
+    .metric.primary {
+      grid-column: 1 / -1;
+      min-height: 154px;
+      color: white;
+      background: linear-gradient(135deg, #10202f, #2166a5);
+      border: none;
+    }
+
+    .label {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--muted);
+      text-transform: uppercase;
+      font-size: 0.74rem;
+      letter-spacing: 0.1em;
+      font-weight: 850;
+    }
+
+    .primary .label { color: rgba(255,255,255,0.72); }
+
+    .value {
+      font-size: clamp(2rem, 12vw, 5rem);
+      line-height: 0.96;
+      font-weight: 950;
+      letter-spacing: -0.07em;
+    }
+
+    .metric:not(.primary) .value {
+      font-size: clamp(1.55rem, 7vw, 3rem);
+      color: var(--ink);
+    }
+
+    .small-note {
+      margin: 9px 0 0;
+      color: var(--muted);
+      font-size: 0.88rem;
+      line-height: 1.45;
+    }
+
+    .primary .small-note { color: rgba(255,255,255,0.72); }
+
+    .gauge-wrap {
+      display: grid;
+      grid-template-columns: 84px 1fr;
+      gap: 16px;
+      align-items: stretch;
+    }
+
+    .river-tube {
+      position: relative;
+      height: 332px;
+      border-radius: 999px;
+      overflow: hidden;
+      background: linear-gradient(180deg, #f9fcff 0%, #e7f2fb 100%);
+      border: 1px solid var(--line);
+      box-shadow: inset 0 0 0 6px rgba(255,255,255,0.72);
+    }
+
+    .water-fill {
+      position: absolute;
+      left: 8px;
+      right: 8px;
+      bottom: 8px;
+      height: 0%;
+      min-height: 10px;
+      border-radius: 999px;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.32), transparent 35%),
+        linear-gradient(180deg, #4fa0da, var(--water));
+      transition: height 700ms ease;
+    }
+
+    .deck-line, .warn-line {
+      position: absolute;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: var(--closed);
+      z-index: 2;
+    }
+
+    .deck-line { top: 7%; }
+    .warn-line { top: 23%; background: var(--warn); opacity: 0.84; }
+
+    .tube-label {
+      position: absolute;
+      right: -2px;
+      transform: translateX(100%);
+      white-space: nowrap;
+      font-size: 0.68rem;
+      color: var(--muted);
+      font-weight: 850;
+    }
+
+    .deck-line .tube-label { top: -8px; color: var(--closed); }
+    .warn-line .tube-label { top: -8px; color: var(--warn); }
+
+    .legend {
+      display: grid;
+      gap: 10px;
+      align-content: start;
+    }
+
+    .risk-item {
+      display: grid;
+      grid-template-columns: 12px 1fr;
+      gap: 10px;
+      align-items: start;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: white;
+    }
+
+    .dot { width: 12px; height: 12px; border-radius: 999px; margin-top: 4px; }
+    .dot.safe { background: var(--safe); }
+    .dot.warn { background: var(--warn); }
+    .dot.closed { background: var(--closed); }
+
+    .risk-title { font-weight: 900; }
+    .risk-copy { margin-top: 2px; color: var(--muted); font-size: 0.86rem; line-height: 1.35; }
+
+    .chart-card { min-height: 390px; }
+    canvas { width: 100% !important; height: 310px !important; }
+
+    .tools {
+      display: grid;
+      gap: 10px;
+    }
+
+    .btn {
+      display: block;
+      width: 100%;
+      border: 0;
+      border-radius: 18px;
+      padding: 15px 16px;
+      background: #10202f;
+      color: white;
+      text-align: center;
+      text-decoration: none;
+      font: inherit;
+      font-weight: 900;
+      cursor: pointer;
+      min-height: 52px;
+    }
+
+    .btn.secondary { background: #2166a5; }
+    .btn.light { background: white; color: var(--ink); border: 1px solid var(--line); }
+
+    .footer-note {
+      margin-top: 18px;
+      padding: 14px 4px 4px;
+      color: var(--muted);
+      font-size: 0.76rem;
+      line-height: 1.45;
+      text-align: center;
+    }
+
+    @media (min-width: 760px) {
+      .hero { padding: 32px; }
+      .status-strip { grid-template-columns: 1fr; }
+      .grid { grid-template-columns: 1.08fr 0.92fr; }
+      .chart-card { grid-column: 1 / -1; }
+      .tools { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .metric-grid { grid-template-columns: 1.2fr 0.9fr 0.9fr; }
+      .metric.primary { grid-column: auto; }
+    }
+  </style>
 </head>
 <body>
+  <main class="shell">
+    <section class="hero" aria-labelledby="page-title">
+      <p class="kicker">Bellbrook automated floodwatch</p>
+      <h1 id="page-title">Bridge gauge, clearance, and crossing status.</h1>
+      <p class="hero-sub">Uses the published Bellbrook river-height feed, compares it against the 2.80 m bridge deck, and refreshes the display every 5 minutes. Treat this as a local decision aid and verify against official warnings and the live camera during flood conditions.</p>
+      <div class="status-strip">
+        <div id="status-banner" class="status-banner">LOADING GAUGE DATA</div>
+      </div>
+    </section>
 
-    <div id="status-banner" class="banner bg-safe">LOADING DATA...</div>
-
-    <div class="card" style="text-align: center;">
-        <div class="label">Bridge Clearance (Deck: 2.80m)</div>
-        <div id="clearance" style="font-size: 3.5rem; font-weight: 900;">--.--m</div>
-        
-        <div class="water-level-box">
-            <div class="label">Actual Water Level (Gauge)</div>
-            <div id="water-level" class="water-val">--.--m</div>
+    <section class="grid" aria-label="Live floodwatch readings">
+      <div class="card">
+        <div class="metric-grid">
+          <div class="metric primary">
+            <span class="label">Deck clearance</span>
+            <div id="clearance" class="value">--.-- m</div>
+            <p id="clearance-note" class="small-note">Distance between current water height and the bridge deck.</p>
+          </div>
+          <div class="metric">
+            <span class="label">Gauge height</span>
+            <div id="water-level" class="value">--.-- m</div>
+            <p class="small-note">Latest river height from feed.</p>
+          </div>
+          <div class="metric">
+            <span class="label">Relative to deck</span>
+            <div id="deck-relative" class="value">--.-- m</div>
+            <p class="small-note">Negative means water is below deck.</p>
+          </div>
         </div>
-        
-        <div id="time" style="font-size: 0.8rem; color: #999; margin-top: 10px;">Waiting for update...</div>
-    </div>
+        <p id="time" class="small-note">Waiting for update...</p>
+        <p id="data-age" class="small-note">Data age unavailable.</p>
+      </div>
 
-    <div class="card">
-        <div class="label">Live Tools</div>
-        <a href="https://www.kempsey.nsw.gov.au/Your-Valley/Disaster-emergency/Flood-information-cameras/Flood-cameras" target="_blank" class="btn btn-cam">📸 VIEW LIVE BELLBROOK WEBCAM</a>
-        <a href="about.html" class="btn">ℹ️ ABOUT PROJECT / MISSION</a>
-    </div>
+      <div class="card">
+        <div class="gauge-wrap">
+          <div class="river-tube" aria-hidden="true">
+            <div class="deck-line"><span class="tube-label">DECK 2.80 m</span></div>
+            <div class="warn-line"><span class="tube-label">WATCH 2.30 m</span></div>
+            <div id="water-fill" class="water-fill"></div>
+          </div>
+          <div class="legend">
+            <div class="risk-item"><span class="dot safe"></span><div><div class="risk-title">SAFE BAND</div><div class="risk-copy">Below 2.30 m. Check conditions, debris, rain, and road surface.</div></div></div>
+            <div class="risk-item"><span class="dot warn"></span><div><div class="risk-title">NEAR DECK</div><div class="risk-copy">2.30 m to 2.79 m. Crossing risk rises quickly.</div></div></div>
+            <div class="risk-item"><span class="dot closed"></span><div><div class="risk-title">DECK REACHED</div><div class="risk-copy">2.80 m or higher. Treat bridge as closed.</div></div></div>
+          </div>
+        </div>
+      </div>
 
-    <div class="card">
-        <div class="label">5-Day River Height Trend (m)</div>
+      <div class="card chart-card">
+        <span class="label">River height trend</span>
         <canvas id="floodChart"></canvas>
-    </div>
+        <p class="small-note">Trend history is stored locally on this device from observations seen by this browser.</p>
+      </div>
 
-    <div class="footer-note">
-        <strong>Bellbrook Automated Floodwatch</strong>
-    </div>
+      <div class="card chart-card">
+        <span class="label">Live tools</span>
+        <div class="tools">
+          <a href="https://www.kempsey.nsw.gov.au/Your-Valley/Disaster-emergency/Flood-information-cameras/Flood-cameras" target="_blank" rel="noopener" class="btn secondary">View live Bellbrook webcam</a>
+          <button class="btn" onclick="update(true)">Refresh gauge now</button>
+          <a href="about.html" class="btn light">About project / mission</a>
+        </div>
+        <p class="small-note">The gauge card is deliberately plain and high-contrast so it can be read fast on a phone in poor weather.</p>
+      </div>
+    </section>
 
-    <script>
-        const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRohfSEJSpuwFQNvpmrmnS0jfADxdhZ218WSZPfwXiUZHWNL0UWHSHKoJdtwZ89tRNwAjMiYc_GOGd2/pub?gid=0&single=true&output=csv";
-        const DECK = 2.80;
-        let chart;
+    <footer class="footer-note">
+      <strong>Bellbrook Bridge Automated Floodwatch.</strong> Deck reference: 2.80 m. Status thresholds are local dashboard thresholds, not a substitute for emergency services advice.
+    </footer>
+  </main>
 
-        function initChart() {
-            const ctx = document.getElementById('floodChart').getContext('2d');
-            chart = new Chart(ctx, {
-                type: 'line',
-                data: { labels: [], datasets: [{ label: 'River Height (m)', borderColor: '#3498db', data: [], fill: true, tension: 0.2, pointRadius: 2 }] },
-                options: { 
-                    responsive: true, maintainAspectRatio: false,
-                    scales: { y: { beginAtZero: true, suggestedMax: 8 } },
-                    plugins: { annotation: { annotations: {
-                        bridgeLine: { type: 'line', yMin: 2.8, yMax: 2.8, borderColor: 'black', borderWidth: 3, label: { display: true, content: 'DECK (2.8m)', position: 'start' } }
-                    }}}
+  <script>
+    const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRohfSEJSpuwFQNvpmrmnS0jfADxdhZ218WSZPfwXiUZHWNL0UWHSHKoJdtwZ89tRNwAjMiYc_GOGd2/pub?gid=0&single=true&output=csv";
+    const DECK = 2.80;
+    const WATCH = 2.30;
+    const HISTORY_KEY = "bellbrook_history_clean";
+    let chart;
+
+    function initChart() {
+      const ctx = document.getElementById("floodChart").getContext("2d");
+      chart = new Chart(ctx, {
+        type: "line",
+        data: {
+          labels: [],
+          datasets: [{
+            label: "River Height (m)",
+            borderColor: "#2166a5",
+            backgroundColor: "rgba(33, 102, 165, 0.14)",
+            data: [],
+            fill: true,
+            tension: 0.28,
+            pointRadius: 2,
+            pointHoverRadius: 5
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: { mode: "index", intersect: false },
+          plugins: {
+            legend: { display: false },
+            annotation: {
+              annotations: {
+                watchLine: {
+                  type: "line",
+                  yMin: WATCH,
+                  yMax: WATCH,
+                  borderColor: "#c77700",
+                  borderWidth: 2,
+                  borderDash: [6, 6],
+                  label: { display: true, content: "WATCH 2.30 m", position: "start" }
+                },
+                bridgeLine: {
+                  type: "line",
+                  yMin: DECK,
+                  yMax: DECK,
+                  borderColor: "#b42318",
+                  borderWidth: 3,
+                  label: { display: true, content: "DECK 2.80 m", position: "start" }
                 }
-            });
-            loadHistory();
+              }
+            }
+          },
+          scales: {
+            x: { ticks: { maxRotation: 0, autoSkip: true, maxTicksLimit: 8 }, grid: { display: false } },
+            y: { beginAtZero: true, suggestedMax: 3.4, ticks: { callback: value => value + " m" } }
+          }
         }
+      });
+      loadHistory();
+    }
 
-        function saveHistory(height, time) {
-            let history = JSON.parse(localStorage.getItem('bellbrook_history_clean') || '[]');
-            if (history.length > 0 && history[history.length - 1].time === time) return;
-            history.push({ height, time });
-            if (history.length > 1500) history.shift();
-            localStorage.setItem('bellbrook_history_clean', JSON.stringify(history));
-            updateChart(history);
+    function parseCSV(text) {
+      const rows = [];
+      let row = [];
+      let cell = "";
+      let quoted = false;
+      for (let i = 0; i < text.length; i++) {
+        const ch = text[i];
+        const next = text[i + 1];
+        if (ch === '"' && quoted && next === '"') { cell += '"'; i++; continue; }
+        if (ch === '"') { quoted = !quoted; continue; }
+        if (ch === "," && !quoted) { row.push(cell.trim()); cell = ""; continue; }
+        if ((ch === "\n" || ch === "\r") && !quoted) {
+          if (ch === "\r" && next === "\n") i++;
+          row.push(cell.trim());
+          if (row.some(Boolean)) rows.push(row);
+          row = [];
+          cell = "";
+          continue;
         }
+        cell += ch;
+      }
+      row.push(cell.trim());
+      if (row.some(Boolean)) rows.push(row);
+      return rows;
+    }
 
-        function loadHistory() {
-            let history = JSON.parse(localStorage.getItem('bellbrook_history_clean') || '[]');
-            updateChart(history);
-        }
+    function readObservation(text) {
+      const rows = parseCSV(text);
+      const numericOnly = /^-?\d+(\.\d+)?\s*m?$/i;
+      for (let r = rows.length - 1; r >= 0; r--) {
+        const row = rows[r].map(c => c.replace(/^"|"$/g, "").trim());
+        const heightCell = row.find(c => numericOnly.test(c));
+        if (!heightCell) continue;
+        const height = parseFloat(heightCell.replace(/m/ig, ""));
+        const timeCell = row.find(c => c !== heightCell && c.length > 0) || row[1] || "";
+        if (!Number.isNaN(height)) return { height, time: timeCell };
+      }
+      const flat = text.split(",").map(item => item.replace(/"/g, "").trim());
+      const fallbackHeight = parseFloat(flat[0]);
+      return Number.isNaN(fallbackHeight) ? null : { height: fallbackHeight, time: flat[1] || "" };
+    }
 
-        function updateChart(history) {
-            chart.data.labels = history.map(h => h.time);
-            chart.data.datasets[0].data = history.map(h => h.height);
-            chart.update();
-        }
+    function formatObservationTime(raw) {
+      const obsDate = new Date(raw);
+      if (Number.isNaN(obsDate.getTime())) return { label: raw || "Unknown time", date: null };
+      return {
+        label: obsDate.toLocaleString("en-AU", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" }),
+        date: obsDate
+      };
+    }
 
-        async function update() {
-            try {
-                const res = await fetch(CSV_URL + "&cache=" + Date.now());
-                const text = await res.text();
-                let d = text.split(",").map(item => item.replace(/"/g, "").trim());
-                const bh = parseFloat(d[0]); 
-                const timeStr = d[1];
+    function saveHistory(height, time) {
+      const history = JSON.parse(localStorage.getItem(HISTORY_KEY) || "[]");
+      if (history.length > 0 && history[history.length - 1].time === time) return updateChart(history);
+      history.push({ height, time });
+      while (history.length > 1500) history.shift();
+      localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+      updateChart(history);
+    }
 
-                if (!isNaN(bh)) {
-                    // Update Clearance
-                    document.getElementById("clearance").innerText = (DECK - bh).toFixed(2) + "m";
-                    
-                    // Update Actual Water Level
-                    document.getElementById("water-level").innerText = bh.toFixed(2) + "m";
-                    
-                    const obsDate = new Date(timeStr);
-                    const labelTime = !isNaN(obsDate.getTime()) ? obsDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', day:'numeric', month:'short'}) : timeStr;
-                    document.getElementById("time").innerText = "Last Obs: " + labelTime;
-                    saveHistory(bh, labelTime);
+    function loadHistory() {
+      const history = JSON.parse(localStorage.getItem(HISTORY_KEY) || "[]");
+      updateChart(history);
+    }
 
-                    const banner = document.getElementById("status-banner");
-                    if (bh >= 2.80) { banner.innerText = "🚫 BRIDGE CLOSED"; banner.className = "banner bg-danger"; }
-                    else if (bh >= 2.30) { banner.innerText = "⚠️ DANGER: NEAR DECK"; banner.className = "banner bg-warn"; }
-                    else { banner.innerText = "✅ SAFE TO CROSS"; banner.className = "banner bg-safe"; }
-                }
-            } catch (e) { console.error(e); }
-        }
+    function updateChart(history) {
+      if (!chart) return;
+      chart.data.labels = history.map(h => h.time);
+      chart.data.datasets[0].data = history.map(h => h.height);
+      chart.update();
+    }
 
-        initChart();
-        update();
-        setInterval(update, 300000);
-    </script>
+    function setStatus(height) {
+      const banner = document.getElementById("status-banner");
+      banner.classList.remove("state-safe", "state-watch", "state-warn", "state-closed");
+      if (height >= DECK) {
+        banner.textContent = "BRIDGE CLOSED — WATER AT OR ABOVE DECK";
+        banner.classList.add("state-closed");
+      } else if (height >= WATCH) {
+        banner.textContent = "DANGER — WATER NEAR DECK";
+        banner.classList.add("state-warn");
+      } else if (height >= 1.80) {
+        banner.textContent = "WATCH — RIVER RISING / CHECK CAMERA";
+        banner.classList.add("state-watch");
+      } else {
+        banner.textContent = "SAFE BAND — CHECK CONDITIONS";
+        banner.classList.add("state-safe");
+      }
+    }
+
+    function setDataAge(date) {
+      const el = document.getElementById("data-age");
+      if (!date) { el.textContent = "Data age unavailable."; return; }
+      const diffMins = Math.max(0, Math.round((Date.now() - date.getTime()) / 60000));
+      el.textContent = diffMins < 60 ? `Data age: about ${diffMins} min.` : `Data age: about ${(diffMins / 60).toFixed(1)} hr.`;
+    }
+
+    async function update(manual = false) {
+      try {
+        const res = await fetch(CSV_URL + "&cache=" + Date.now(), { cache: "no-store" });
+        const text = await res.text();
+        const obs = readObservation(text);
+        if (!obs) throw new Error("No numeric river height found in feed.");
+
+        const bh = obs.height;
+        const clearance = DECK - bh;
+        const relative = bh - DECK;
+        const time = formatObservationTime(obs.time);
+        const fillPct = Math.max(3, Math.min(100, (bh / DECK) * 93));
+
+        document.getElementById("clearance").textContent = clearance.toFixed(2) + " m";
+        document.getElementById("water-level").textContent = bh.toFixed(2) + " m";
+        document.getElementById("deck-relative").textContent = (relative >= 0 ? "+" : "") + relative.toFixed(2) + " m";
+        document.getElementById("time").textContent = "Last observation: " + time.label;
+        document.getElementById("clearance-note").textContent = clearance >= 0 ? "Water remains below the 2.80 m deck reference." : "Water is above the 2.80 m deck reference.";
+        document.getElementById("water-fill").style.height = fillPct + "%";
+
+        setStatus(bh);
+        setDataAge(time.date);
+        saveHistory(bh, time.label);
+      } catch (error) {
+        console.error(error);
+        const banner = document.getElementById("status-banner");
+        banner.textContent = manual ? "REFRESH FAILED — CHECK CONNECTION" : "DATA LOAD FAILED";
+        banner.className = "status-banner state-warn";
+      }
+    }
+
+    initChart();
+    update();
+    setInterval(update, 300000);
+  </script>
 </body>
 </html>
