@@ -326,14 +326,18 @@
         data: {
           labels: [],
           datasets: [{
+            segment: { borderWidth: 4 },
             label: "River Height (m)",
             borderColor: "#2166a5",
             backgroundColor: "rgba(33, 102, 165, 0.14)",
             data: [],
             fill: true,
             tension: 0.28,
-            pointRadius: 2,
-            pointHoverRadius: 5
+            pointRadius: 5,
+            pointHoverRadius: 7,
+            pointBackgroundColor: "#2166a5",
+            pointBorderColor: "#ffffff",
+            pointBorderWidth: 2
           }]
         },
         options: {
@@ -459,6 +463,27 @@
       chart.data.datasets[0].data = history.map(h => h.height);
       chart.update();
     }
+
+    const currentReadingStem = {
+      id: "currentReadingStem",
+      afterDatasetsDraw(chart) {
+        const meta = chart.getDatasetMeta(0);
+        if (!meta || !meta.data || !meta.data.length) return;
+        const point = meta.data[meta.data.length - 1];
+        const ctx = chart.ctx;
+        const baseline = chart.scales.y.getPixelForValue(0);
+        ctx.save();
+        ctx.beginPath();
+        ctx.moveTo(point.x, baseline);
+        ctx.lineTo(point.x, point.y);
+        ctx.lineWidth = 4;
+        ctx.strokeStyle = "#2166a5";
+        ctx.stroke();
+        ctx.restore();
+      }
+    };
+
+    Chart.register(currentReadingStem);
 
     function setStatus(height) {
       const banner = document.getElementById("status-banner");
