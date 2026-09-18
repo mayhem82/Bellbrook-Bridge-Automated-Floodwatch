@@ -312,7 +312,7 @@
   </main>
 
   <script>
-    const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRohfSEJSpuwFQNvpmrmnS0jfADxdhZ218WSZPfwXiUZHWNL0UWHSHKoJdtwZ89tRNwAjMiYc_GOGd2/pub?gid=0&single=true&output=csv";
+    const DATA_URL = "https://australiademo.opendatasoft.com/api/explore/v2.1/catalog/datasets/bom-river-heights-data/records?where=station_id%3D%22059122%22&order_by=datetime%20DESC&limit=10";
     const DECK = 2.80;
     const WATCH = 2.30;
     const HISTORY_KEY = "bellbrook_history_clean";
@@ -407,20 +407,19 @@
       return rows;
     }
 
-    function readObservation(text) {
-      const rows = parseCSV(text);
-      const numericOnly = /^-?\d+(\.\d+)?\s*m?$/i;
-      for (let r = rows.length - 1; r >= 0; r--) {
-        const row = rows[r].map(c => c.replace(/^"|"$/g, "").trim());
-        const heightCell = row.find(c => numericOnly.test(c));
-        if (!heightCell) continue;
-        const height = parseFloat(heightCell.replace(/m/ig, ""));
-        const timeCell = row.find(c => c !== heightCell && c.length > 0) || row[1] || "";
-        if (!Number.isNaN(height)) return { height, time: timeCell };
-      }
-      const flat = text.split(",").map(item => item.replace(/"/g, "").trim());
-      const fallbackHeight = parseFloat(flat[0]);
-      return Number.isNaN(fallbackHeight) ? null : { height: fallbackHeight, time: flat[1] || "" };
+    function readObservation(payload) {
+      if (!payload || !Array.isArray(payload.results)) return null;
+      const valid = payload.results
+        .filter(r =>
+          r.station_id === "059122" &&
+          r.height !== null &&
+          r.height !== undefined &&
+          Number.isFinite(Number(r.height)) &&
+          r.datetime
+        )
+        .sort((a, b) => new Date(b.datetime) - new Date(a.datetime));
+      if (!valid.length) return null;
+      return { height: Number(valid[0].height), time: valid[0].datetime };
     }
 
     function formatObservationTime(raw) {
@@ -480,10 +479,11 @@
 
     async function update(manual = false) {
       try {
-        const res = await fetch(CSV_URL + "&cache=" + Date.now(), { cache: "no-store" });
-        const text = await res.text();
-        const obs = readObservation(text);
-        if (!obs) throw new Error("No numeric river height found in feed.");
+        const res = await fetch(DATA_URL + "&cache=" + Date.now(), { cache: "no-store" });
+        if (!res.ok) throw new Error("Floodwatch mirror HTTP " + res.status);
+        const payload = await res.json();
+        const obs = readObservation(payload);
+        if (!obs) throw new Error("No valid Bellbrook 059122 observation found.");
 
         const bh = obs.height;
         const clearance = DECK - bh;
