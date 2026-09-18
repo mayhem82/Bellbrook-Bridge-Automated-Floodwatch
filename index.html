@@ -271,8 +271,9 @@
             <p class="small-note">Negative means water is below deck.</p>
           </div>
         </div>
-        <p id="time" class="small-note">Waiting for update...</p>
-        <p id="data-age" class="small-note">Data age unavailable.</p>
+        <p id="time" class="small-note">Latest gauge observation: waiting...</p>
+        <p id="data-age" class="small-note">Observation age unavailable.</p>
+        <p id="last-checked" class="small-note"><strong>Floodwatch last checked:</strong> waiting...</p>
       </div>
 
       <div class="card">
@@ -534,7 +535,8 @@
         document.getElementById("clearance").textContent = clearance.toFixed(2) + " m";
         document.getElementById("water-level").textContent = bh.toFixed(2) + " m";
         document.getElementById("deck-relative").textContent = (relative >= 0 ? "+" : "") + relative.toFixed(2) + " m";
-        document.getElementById("time").textContent = "Last observation: " + time.label;
+        document.getElementById("time").textContent = "Latest gauge observation: " + time.label;
+        document.getElementById("last-checked").innerHTML = "<strong>Floodwatch last checked:</strong> " + new Date().toLocaleTimeString("en-AU", { hour: "2-digit", minute: "2-digit" }) + " — source reached successfully";
         document.getElementById("clearance-note").textContent = clearance >= 0 ? "Water remains below the 2.80 m deck reference." : "Water is above the 2.80 m deck reference.";
         document.getElementById("water-fill").style.height = fillPct + "%";
         document.getElementById("water-callout").style.top = calloutTop + "%";
@@ -548,6 +550,7 @@
         const banner = document.getElementById("status-banner");
         banner.textContent = manual ? "REFRESH FAILED — CHECK CONNECTION" : "DATA LOAD FAILED";
         banner.className = "status-banner state-warn";
+        document.getElementById("last-checked").innerHTML = "<strong>Floodwatch last checked:</strong> " + new Date().toLocaleTimeString("en-AU", { hour: "2-digit", minute: "2-digit" }) + " — check failed";
       }
     }
 
