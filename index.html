@@ -4,7 +4,11 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Bellbrook Bridge Floodwatch</title>
-  <meta name="description" content="Bellbrook Bridge live floodwatch dashboard using a published river-height feed and bridge-deck clearance calculation." />
+  <meta name="description" content="Bellbrook Bridge live floodwatch dashboard using current river-height observations and bridge-deck clearance calculation." />
+  <meta name="theme-color" content="#075b35" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="icon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="icon.svg" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@2.1.0"></script>
   <style>
@@ -231,7 +235,7 @@
       .status-strip { grid-template-columns: 1fr; }
       .grid { grid-template-columns: 1.08fr 0.92fr; }
       .chart-card { grid-column: 1 / -1; }
-      .tools { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+      .tools { grid-template-columns: repeat(5, minmax(0, 1fr)); }
       .metric-grid { grid-template-columns: 1.2fr 0.9fr 0.9fr; }
       .metric.primary { grid-column: auto; }
     }
@@ -300,6 +304,7 @@
         <div class="tools">
           <a href="https://www.kempsey.nsw.gov.au/Your-Valley/Disaster-emergency/Flood-information-cameras/Flood-cameras" target="_blank" rel="noopener" class="btn secondary">View live Bellbrook webcam</a>
           <button class="btn" onclick="update(true)">Refresh gauge now</button>
+          <button id="install-app" class="btn secondary" type="button">Install / save to phone</button>
           <button class="btn light" onclick="clearHistory()">Clear saved trend + refresh</button>
           <a href="about.html" class="btn light">About project / mission</a>
         </div>
@@ -543,6 +548,29 @@
         banner.textContent = manual ? "REFRESH FAILED — CHECK CONNECTION" : "DATA LOAD FAILED";
         banner.className = "status-banner state-warn";
       }
+    }
+
+    let deferredInstallPrompt = null;
+    const installButton = document.getElementById("install-app");
+
+    window.addEventListener("beforeinstallprompt", event => {
+      event.preventDefault();
+      deferredInstallPrompt = event;
+      installButton.textContent = "Install Floodwatch";
+    });
+
+    installButton.addEventListener("click", async () => {
+      if (deferredInstallPrompt) {
+        deferredInstallPrompt.prompt();
+        await deferredInstallPrompt.userChoice;
+        deferredInstallPrompt = null;
+        return;
+      }
+      alert("Use your browser menu and choose Add to Home screen or Install app.");
+    });
+
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js"));
     }
 
     initChart();
