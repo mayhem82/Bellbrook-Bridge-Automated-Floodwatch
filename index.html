@@ -231,7 +231,7 @@
       .status-strip { grid-template-columns: 1fr; }
       .grid { grid-template-columns: 1.08fr 0.92fr; }
       .chart-card { grid-column: 1 / -1; }
-      .tools { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .tools { grid-template-columns: repeat(4, minmax(0, 1fr)); }
       .metric-grid { grid-template-columns: 1.2fr 0.9fr 0.9fr; }
       .metric.primary { grid-column: auto; }
     }
@@ -300,6 +300,7 @@
         <div class="tools">
           <a href="https://www.kempsey.nsw.gov.au/Your-Valley/Disaster-emergency/Flood-information-cameras/Flood-cameras" target="_blank" rel="noopener" class="btn secondary">View live Bellbrook webcam</a>
           <button class="btn" onclick="update(true)">Refresh gauge now</button>
+          <button class="btn light" onclick="clearHistory()">Clear saved trend + refresh</button>
           <a href="about.html" class="btn light">About project / mission</a>
         </div>
         <p class="small-note">The gauge card is deliberately plain and high-contrast so it can be read fast on a phone in poor weather.</p>
@@ -315,7 +316,7 @@
     const DATA_URL = "https://australiademo.opendatasoft.com/api/explore/v2.1/catalog/datasets/bom-river-heights-data/records?where=station_id%3D%22059122%22&order_by=datetime%20DESC&limit=10";
     const DECK = 2.80;
     const WATCH = 2.30;
-    const HISTORY_KEY = "bellbrook_history_clean";
+    const HISTORY_KEY = "bellbrook_history_direct_v2";
     let chart;
 
     function initChart() {
@@ -432,12 +433,19 @@
     }
 
     function saveHistory(height, time) {
+      // Direct-feed era only. A new storage key isolates all legacy Google-Sheet history.
       const history = JSON.parse(localStorage.getItem(HISTORY_KEY) || "[]");
       if (history.length > 0 && history[history.length - 1].time === time) return updateChart(history);
       history.push({ height, time });
       while (history.length > 1500) history.shift();
       localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
       updateChart(history);
+    }
+
+    function clearHistory() {
+      localStorage.removeItem(HISTORY_KEY);
+      if (chart) updateChart([]);
+      update(true);
     }
 
     function loadHistory() {
