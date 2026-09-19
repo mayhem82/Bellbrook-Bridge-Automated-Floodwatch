@@ -9,8 +9,6 @@
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" href="icon-192.png" type="image/png" sizes="192x192" />
   <link rel="apple-touch-icon" href="icon-192.png" />
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@2.1.0"></script>
   <style>
     :root {
       --deck: 2.80;
@@ -329,70 +327,31 @@
     let chart;
 
     function initChart() {
-      const ctx = document.getElementById("floodChart").getContext("2d");
-      chart = new Chart(ctx, {
-        type: "line",
-        data: {
-          labels: [],
-          datasets: [{
-            segment: { borderWidth: 4 },
-            label: "River Height (m)",
-            borderColor: "#2166a5",
-            backgroundColor: "rgba(33, 102, 165, 0.14)",
-            data: [],
-            fill: true,
-            tension: 0.28,
-            pointRadius: 5,
-            pointHoverRadius: 7,
-            pointBackgroundColor: "#2166a5",
-            pointBorderColor: "#ffffff",
-            pointBorderWidth: 2
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          interaction: { mode: "index", intersect: false },
-          plugins: {
-            legend: { display: false },
-            annotation: {
-              annotations: {
-                watchLowLine: {
-                  type: "line",
-                  yMin: 1.80,
-                  yMax: 1.80,
-                  borderColor: "#2d6cdf",
-                  borderWidth: 2,
-                  borderDash: [6, 6],
-                  label: { display: true, content: "WATCH 1.80 m", position: "start" }
-                },
-                watchLine: {
-                  type: "line",
-                  yMin: WATCH,
-                  yMax: WATCH,
-                  borderColor: "#c77700",
-                  borderWidth: 2,
-                  borderDash: [6, 6],
-                  label: { display: true, content: "NEAR DECK 2.30 m", position: "start" }
-                },
-                bridgeLine: {
-                  type: "line",
-                  yMin: DECK,
-                  yMax: DECK,
-                  borderColor: "#b42318",
-                  borderWidth: 3,
-                  label: { display: true, content: "DECK 2.80 m", position: "start" }
-                }
-              }
-            }
-          },
-          scales: {
-            x: { ticks: { maxRotation: 0, autoSkip: true, maxTicksLimit: 8 }, grid: { display: false } },
-            y: { beginAtZero: true, suggestedMax: 3.4, ticks: { callback: value => value + " m" } }
-          }
-        }
-      });
+      chart = document.getElementById("floodChart");
       loadHistory();
+      window.addEventListener("resize", () => {
+        const history = safeReadHistory();
+        updateChart(history);
+      });
+    }
+
+    function safeReadHistory() {
+      try {
+        const raw = localStorage.getItem(HISTORY_KEY);
+        const parsed = raw ? JSON.parse(raw) : [];
+        return Array.isArray(parsed) ? parsed : [];
+      } catch (error) {
+        console.warn("Local trend storage unavailable:", error);
+        return [];
+      }
+    }
+
+    function safeWriteHistory(history) {
+      try {
+        localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+      } catch (error) {
+        console.warn("Local trend storage unavailable:", error);
+      }
     }
 
     function parseCSV(text) {
@@ -446,53 +405,95 @@
     }
 
     function saveHistory(height, time) {
-      // Direct-feed era only. A new storage key isolates all legacy Google-Sheet history.
-      const history = JSON.parse(localStorage.getItem(HISTORY_KEY) || "[]");
-      if (history.length > 0 && history[history.length - 1].time === time) return updateChart(history);
+      const history = safeReadHistory();
+      if (history.length > 0 && history[history.length - 1].time === time) {
+        updateChart(history);
+        return;
+      }
       history.push({ height, time });
       while (history.length > 1500) history.shift();
-      localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+      safeWriteHistory(history);
       updateChart(history);
     }
 
     function clearHistory() {
-      localStorage.removeItem(HISTORY_KEY);
-      if (chart) updateChart([]);
+      try { localStorage.removeItem(HISTORY_KEY); } catch (error) { console.warn(error); }
+      updateChart([]);
       update(true);
     }
 
     function loadHistory() {
-      const history = JSON.parse(localStorage.getItem(HISTORY_KEY) || "[]");
-      updateChart(history);
+      updateChart(safeReadHistory());
     }
 
     function updateChart(history) {
-      if (!chart) return;
-      chart.data.labels = history.map(h => h.time);
-      chart.data.datasets[0].data = history.map(h => h.height);
-      chart.update();
-    }
+      if (!chart || !chart.getContext) return;
+      const rect = chart.getBoundingClientRect();
+      const dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+      const width = Math.max(280, Math.round(rect.width || chart.parentElement.clientWidth || 600));
+      const height = 310;
+      chart.width = Math.round(width * dpr);
+      chart.height = Math.round(height * dpr);
+      const ctx = chart.getContext("2d");
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, width, height);
 
-    const currentReadingStem = {
-      id: "currentReadingStem",
-      afterDatasetsDraw(chart) {
-        const meta = chart.getDatasetMeta(0);
-        if (!meta || !meta.data || !meta.data.length) return;
-        const point = meta.data[meta.data.length - 1];
-        const ctx = chart.ctx;
-        const baseline = chart.scales.y.getPixelForValue(0);
-        ctx.save();
-        ctx.beginPath();
-        ctx.moveTo(point.x, baseline);
-        ctx.lineTo(point.x, point.y);
-        ctx.lineWidth = 4;
-        ctx.strokeStyle = "#2166a5";
-        ctx.stroke();
-        ctx.restore();
+      const pad = { l: 42, r: 14, t: 14, b: 30 };
+      const plotW = width - pad.l - pad.r;
+      const plotH = height - pad.t - pad.b;
+      const maxY = 3.4;
+      const y = v => pad.t + plotH - (Math.max(0, Math.min(maxY, v)) / maxY) * plotH;
+
+      ctx.font = "12px system-ui, sans-serif";
+      ctx.lineWidth = 1;
+      ctx.strokeStyle = "rgba(16,32,47,.12)";
+      ctx.fillStyle = "#66788a";
+      [0,1,2,3].forEach(v => {
+        const py = y(v);
+        ctx.beginPath(); ctx.moveTo(pad.l, py); ctx.lineTo(width-pad.r, py); ctx.stroke();
+        ctx.fillText(v + " m", 4, py + 4);
+      });
+
+      [
+        {v:1.80,c:"#2d6cdf",t:"WATCH 1.80"},
+        {v:2.30,c:"#c77700",t:"NEAR DECK 2.30"},
+        {v:2.80,c:"#b42318",t:"DECK 2.80"}
+      ].forEach(line => {
+        const py=y(line.v);
+        ctx.strokeStyle=line.c; ctx.lineWidth=2; ctx.setLineDash([6,6]);
+        ctx.beginPath(); ctx.moveTo(pad.l,py); ctx.lineTo(width-pad.r,py); ctx.stroke();
+        ctx.setLineDash([]); ctx.fillStyle=line.c; ctx.fillText(line.t,pad.l+5,py-5);
+      });
+
+      if (!history.length) {
+        ctx.fillStyle="#66788a";
+        ctx.textAlign="center";
+        ctx.fillText("Trend begins after this device records observations.", width/2, height/2);
+        ctx.textAlign="left";
+        return;
       }
-    };
 
-    Chart.register(currentReadingStem);
+      const visible = history.slice(-144);
+      const x = i => visible.length === 1 ? pad.l + plotW/2 : pad.l + (i/(visible.length-1))*plotW;
+
+      ctx.beginPath();
+      visible.forEach((h,i) => {
+        const px=x(i), py=y(Number(h.height));
+        if(i===0) ctx.moveTo(px,py); else ctx.lineTo(px,py);
+      });
+      ctx.lineWidth=4; ctx.strokeStyle="#2166a5"; ctx.setLineDash([]); ctx.stroke();
+
+      const last=visible[visible.length-1];
+      const lx=x(visible.length-1), ly=y(Number(last.height));
+      ctx.strokeStyle="#2166a5"; ctx.lineWidth=3;
+      ctx.beginPath(); ctx.moveTo(lx,y(0)); ctx.lineTo(lx,ly); ctx.stroke();
+      ctx.fillStyle="#2166a5"; ctx.beginPath(); ctx.arc(lx,ly,6,0,Math.PI*2); ctx.fill();
+      ctx.strokeStyle="#fff"; ctx.lineWidth=2; ctx.stroke();
+
+      ctx.fillStyle="#66788a"; ctx.font="11px system-ui, sans-serif";
+      ctx.fillText(String(visible[0].time || ""), pad.l, height-8);
+      ctx.textAlign="right"; ctx.fillText(String(last.time || ""), width-pad.r, height-8); ctx.textAlign="left";
+    }
 
     function setStatus(height) {
       const banner = document.getElementById("status-banner");
