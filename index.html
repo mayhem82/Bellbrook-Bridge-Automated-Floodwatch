@@ -293,9 +293,9 @@
       </div>
 
       <div class="card chart-card">
-        <span class="label">Observed readings on this device</span>
+        <span class="label">12-hour Bellbrook trend</span>
         <canvas id="floodChart"></canvas>
-        <p class="small-note">Trend history is stored locally on this device from observations seen by this browser.</p>
+        <p class="small-note">Trend is rebuilt from the captured Bellbrook observation table each refresh, so it does not depend on when this app was opened.</p>
       </div>
 
       <div class="card chart-card">
@@ -304,11 +304,11 @@
           <a href="https://www.kempsey.nsw.gov.au/Your-Valley/Disaster-emergency/Flood-information-cameras/Flood-cameras" target="_blank" rel="noopener" class="btn secondary">View live Bellbrook webcam</a>
           <a href="https://www.bom.gov.au/fwo/IDN60232/IDN60232.059122.tbl.shtml" target="_blank" rel="noopener" class="btn secondary">Check official BOM Bellbrook table</a>
           <button class="btn" onclick="update(true)">Refresh gauge now</button>
-          <button id="install-app" class="btn secondary" type="button">Install Floodwatch</button>
+          <button id="install-app" class="btn secondary" type="button">Install Floodwatch</button>\n          <button id="update-app" class="btn secondary" type="button">Update Floodwatch</button>
           <button class="btn light" onclick="clearHistory()">Clear saved trend + refresh</button>
           <a href="about.html" class="btn light">About project / mission</a>
         </div>
-        <p class="small-note"><strong>Install Floodwatch:</strong> The same install button works on supported phones and desktop computers. On Android, the Floodwatch icon may appear in your Apps screen/app drawer rather than directly on the Home screen. On a PC using a supported browser such as Chrome or Edge, choose <strong>Install Floodwatch</strong>; the installed app is available from your computer’s apps/start menu and can be pinned or have a desktop shortcut created. The installed app uses the Floodwatch bridge-and-water icon.</p>
+        <p id="app-update-status" class="small-note"><strong>App version:</strong> checking for updates...</p>\n        <p class="small-note"><strong>Install Floodwatch:</strong> The same install button works on supported phones and desktop computers. On Android, the Floodwatch icon may appear in your Apps screen/app drawer rather than directly on the Home screen. On a PC using a supported browser such as Chrome or Edge, choose <strong>Install Floodwatch</strong>; the installed app is available from your computer’s apps/start menu and can be pinned or have a desktop shortcut created. The installed app uses the Floodwatch bridge-and-water icon.</p>
         <p class="small-note"><strong>Reading looks stale?</strong> Open “Check official BOM Bellbrook table” and compare the latest timestamp for station 059122. This lets you see whether BOM itself has not published a newer Bellbrook observation or whether Floodwatch needs refreshing.</p>
         <p class="small-note">The gauge card is deliberately plain and high-contrast so it can be read fast on a phone in poor weather.</p>
       </div>
@@ -320,10 +320,10 @@
   </main>
 
   <script>
-    const DATA_URL = "https://australiademo.opendatasoft.com/api/explore/v2.1/catalog/datasets/bom-river-heights-data/records?where=station_id%3D%22059122%22&order_by=datetime%20DESC&limit=10";
+    const DATA_URL = "https://australiademo.opendatasoft.com/api/explore/v2.1/catalog/datasets/bom-river-heights-data/records?where=station_id%3D%22059122%22&order_by=datetime%20DESC&limit=100";
     const DECK = 2.80;
     const WATCH = 2.30;
-    const HISTORY_KEY = "bellbrook_history_direct_v2";
+    const HISTORY_KEY = "bellbrook_history_direct_v2";\n    const APP_BUILD = "2026.09.20.1";
     let chart;
 
     function initChart() {
@@ -404,26 +404,38 @@
       };
     }
 
+    function tableHistory(payload) {
+      if (!payload || !Array.isArray(payload.results)) return [];
+      const cutoff = Date.now() - (12 * 60 * 60 * 1000);
+      const byTime = new Map();
+      payload.results.forEach(r => {
+        if (r.station_id !== "059122" || !r.datetime || !Number.isFinite(Number(r.height))) return;
+        const d = new Date(r.datetime);
+        if (Number.isNaN(d.getTime()) || d.getTime() < cutoff) return;
+        byTime.set(d.toISOString(), {
+          height: Number(r.height),
+          time: d.toLocaleString("en-AU", { day:"2-digit", month:"short", hour:"2-digit", minute:"2-digit" }),
+          stamp: d.getTime()
+        });
+      });
+      return Array.from(byTime.values()).sort((a,b) => a.stamp - b.stamp);
+    }
+
     function saveHistory(height, time) {
+      // Fallback only. Normal trend data is rebuilt from the captured source table.
       const history = safeReadHistory();
-      if (history.length > 0 && history[history.length - 1].time === time) {
-        updateChart(history);
-        return;
-      }
-      history.push({ height, time });
+      if (!history.some(h => h.time === time)) history.push({ height, time });
       while (history.length > 1500) history.shift();
       safeWriteHistory(history);
-      updateChart(history);
     }
 
     function clearHistory() {
       try { localStorage.removeItem(HISTORY_KEY); } catch (error) { console.warn(error); }
-      updateChart([]);
       update(true);
     }
 
     function loadHistory() {
-      updateChart(safeReadHistory());
+      updateChart([]);
     }
 
     function updateChart(history) {
@@ -453,7 +465,6 @@
         ctx.beginPath(); ctx.moveTo(pad.l, py); ctx.lineTo(width-pad.r, py); ctx.stroke();
         ctx.fillText(v + " m", 4, py + 4);
       });
-
       [
         {v:1.80,c:"#2d6cdf",t:"WATCH 1.80"},
         {v:2.30,c:"#c77700",t:"NEAR DECK 2.30"},
@@ -464,32 +475,24 @@
         ctx.beginPath(); ctx.moveTo(pad.l,py); ctx.lineTo(width-pad.r,py); ctx.stroke();
         ctx.setLineDash([]); ctx.fillStyle=line.c; ctx.fillText(line.t,pad.l+5,py-5);
       });
-
       if (!history.length) {
-        ctx.fillStyle="#66788a";
-        ctx.textAlign="center";
-        ctx.fillText("Trend begins after this device records observations.", width/2, height/2);
-        ctx.textAlign="left";
-        return;
+        ctx.fillStyle="#66788a"; ctx.textAlign="center";
+        ctx.fillText("No 12-hour table history returned yet.", width/2, height/2);
+        ctx.textAlign="left"; return;
       }
-
-      const visible = history.slice(-144);
+      const visible = history;
       const x = i => visible.length === 1 ? pad.l + plotW/2 : pad.l + (i/(visible.length-1))*plotW;
-
       ctx.beginPath();
       visible.forEach((h,i) => {
         const px=x(i), py=y(Number(h.height));
         if(i===0) ctx.moveTo(px,py); else ctx.lineTo(px,py);
       });
       ctx.lineWidth=4; ctx.strokeStyle="#2166a5"; ctx.setLineDash([]); ctx.stroke();
-
-      const last=visible[visible.length-1];
-      const lx=x(visible.length-1), ly=y(Number(last.height));
+      const last=visible[visible.length-1], lx=x(visible.length-1), ly=y(Number(last.height));
       ctx.strokeStyle="#2166a5"; ctx.lineWidth=3;
       ctx.beginPath(); ctx.moveTo(lx,y(0)); ctx.lineTo(lx,ly); ctx.stroke();
       ctx.fillStyle="#2166a5"; ctx.beginPath(); ctx.arc(lx,ly,6,0,Math.PI*2); ctx.fill();
       ctx.strokeStyle="#fff"; ctx.lineWidth=2; ctx.stroke();
-
       ctx.fillStyle="#66788a"; ctx.font="11px system-ui, sans-serif";
       ctx.fillText(String(visible[0].time || ""), pad.l, height-8);
       ctx.textAlign="right"; ctx.fillText(String(last.time || ""), width-pad.r, height-8); ctx.textAlign="left";
@@ -547,7 +550,7 @@
 
         setStatus(bh);
         setDataAge(time.date);
-        saveHistory(bh, time.label);
+        const sourceHistory = tableHistory(payload);\n        if (sourceHistory.length) updateChart(sourceHistory);\n        else { saveHistory(bh, time.label); updateChart(safeReadHistory()); }
       } catch (error) {
         console.error(error);
         const banner = document.getElementById("status-banner");
@@ -558,7 +561,7 @@
     }
 
     let deferredInstallPrompt = null;
-    const installButton = document.getElementById("install-app");
+    const installButton = document.getElementById("install-app");\n    const updateButton = document.getElementById("update-app");\n    const updateStatus = document.getElementById("app-update-status");
 
     window.addEventListener("beforeinstallprompt", event => {
       event.preventDefault();
