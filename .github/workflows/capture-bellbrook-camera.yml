@@ -1,0 +1,58 @@
+name: Bellbrook camera capture prototype
+
+# Disabled by design until Kempsey Shire Council confirms automated archival
+# and derivative-timelapse reuse permission for the Bellbrook Bridge camera.
+# This workflow can be run manually for endpoint/validation testing only.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: bellbrook-camera-capture
+  cancel-in-progress: false
+
+jobs:
+  validate-current-frame:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Fetch and validate Bellbrook Bridge JPEG
+        shell: bash
+        env:
+          CAMERA_URL: https://public.disasterwatch-iotp.com.au/prospectpublicimages/1662/Bellbrook%20Bridge.jpeg
+        run: |
+          set -euo pipefail
+          curl --fail --location --silent --show-error \
+            --connect-timeout 10 --max-time 30 \
+            --retry 2 --retry-delay 5 \
+            -H 'Accept: image/jpeg' \
+            -H 'User-Agent: Bellbrook-Floodwatch/1.0' \
+            -D headers.txt -o bellbrook-source.jpeg "$CAMERA_URL"
+
+          bytes=$(stat -c '%s' bellbrook-source.jpeg)
+          test "$bytes" -ge 10000
+          test "$bytes" -le 5000000
+
+          mime=$(file --brief --mime-type bellbrook-source.jpeg)
+          test "$mime" = image/jpeg
+
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path("bellbrook-source.jpeg")
+          b = p.read_bytes()
+          if not (b.startswith(b"\xff\xd8") and b.endswith(b"\xff\xd9")):
+              raise SystemExit("Invalid JPEG markers")
+          print(f"validated JPEG: {len(b)} bytes")
+          PY
+
+          sha256sum bellbrook-source.jpeg
+          printf '\nHTTP response headers:\n'
+          cat headers.txt
+
+      - name: Do not persist camera imagery
+        run: |
+          echo "Validation only: the fetched frame is intentionally not uploaded,"
+          echo "committed, archived, or republished by this workflow."
