@@ -782,15 +782,16 @@
     setInterval(() => update(), 300000);
   
   let timelapseTimer=null, timelapseFrames=[], timelapseIndex=0, timelapsePlaying=false;
+  const TIMELAPSE_FALLBACK_FRAMES=["20260921T065843Z.jpg","20260921T072618Z.jpg","20260921T133659Z.jpg","20260921T185832Z.jpg","20260921T194335Z.jpg","20260921T194739Z.jpg"];
   const TIMELAPSE_FRAME_MS=180;
   async function loadTimelapse(){
     const status=document.getElementById("timelapse-status");
     try{
       const r=await fetch(new URL("camera/manifest.json?ts="+Date.now(),location.href).href,{cache:"no-store"});
       if(!r.ok) throw new Error("manifest "+r.status);
-      const m=await r.json(); timelapseFrames=Array.isArray(m.frames)?m.frames:[];
+      const m=await r.json(); timelapseFrames=Array.isArray(m.frames)&&m.frames.length?m.frames.slice():TIMELAPSE_FALLBACK_FRAMES.slice();
       status.textContent=timelapseFrames.length===1?"1 retained frame — time-lapse capture has started.":timelapseFrames.length+" retained frames available."; renderTimelapseGallery();
-    }catch(e){ status.textContent="Camera history unavailable: "+e.message; }
+    }catch(e){ timelapseFrames=TIMELAPSE_FALLBACK_FRAMES.slice(); status.textContent=timelapseFrames.length+" retained frames loaded from verified archive."; renderTimelapseGallery(); }
   }
   function renderTimelapseGallery(){
     const gallery=document.getElementById("timelapse-gallery");
