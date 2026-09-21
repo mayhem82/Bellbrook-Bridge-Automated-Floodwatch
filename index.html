@@ -792,7 +792,7 @@
     try{
       const r=await fetch(new URL("camera/manifest.json?ts="+Date.now(),location.href).href,{cache:"no-store"});
       if(!r.ok) throw new Error("manifest "+r.status);
-      const m=await r.json(); timelapseFrames=Array.isArray(m.frames)&&m.frames.length?m.frames.slice():TIMELAPSE_FALLBACK_FRAMES.slice();
+      const m=await r.json(); const manifestFrames=Array.isArray(m.frames)?m.frames:[]; timelapseFrames=[...new Set([...manifestFrames,...TIMELAPSE_FALLBACK_FRAMES])].sort();
       status.textContent=timelapseFrames.length===1?"1 retained frame — time-lapse capture has started.":timelapseFrames.length+" retained frames available."; renderTimelapseGallery();
     }catch(e){ timelapseFrames=TIMELAPSE_FALLBACK_FRAMES.slice(); status.textContent=timelapseFrames.length+" retained frames loaded from verified archive."; renderTimelapseGallery(); }
   }
