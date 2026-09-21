@@ -1,0 +1,30 @@
+name: Inspect official BOM data service
+on:
+  push:
+    branches: [fix/bom-source-20260921]
+    paths: [.github/workflows/inspect-bom.yml]
+permissions:
+  contents: read
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: List official Bellbrook data products
+        run: |
+          python - <<'PY'
+          from ftplib import FTP
+          with FTP('ftp.bom.gov.au', timeout=20) as ftp:
+              ftp.login()
+              ftp.cwd('/anon/gen/fwo')
+              names = ftp.nlst()
+              selected = [n for n in names if n.startswith(('IDN60232', 'IDN60141')) or (n.startswith('IDN') and n.lower().endswith(('.hcs', '.csv')))]
+              print('Matched official product names:', selected)
+              for name in selected:
+                  if name.startswith('IDN60232') and ('059122' in name or name.count('.') == 1):
+                      chunks = []
+                      ftp.retrbinary('RETR ' + name, chunks.append)
+                      data = b''.join(chunks)
+                      print('PRODUCT', name, 'BYTES', len(data))
+                      print(data.decode('utf-8', errors='replace')[:45000])
+          PY
