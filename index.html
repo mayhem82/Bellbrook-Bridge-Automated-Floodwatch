@@ -297,7 +297,8 @@
       </div>
 
       <div class="card chart-card">
-        <span class="label">12-hour Bellbrook trend</span>
+        <span class="label">Bellbrook trend</span>
+        <div class="tools" style="grid-template-columns:repeat(2,minmax(0,1fr));margin:10px 0 14px"><button id="trend-24h" class="btn light" type="button">24 hours</button><button id="trend-14d" class="btn secondary" type="button">14 days</button></div>
         <canvas id="floodChart"></canvas>
         <p id="trend-note" class="small-note">Trend is rebuilt from the captured Bellbrook observation table each refresh, so it does not depend on when this app was opened.</p>
       </div>
@@ -331,9 +332,11 @@
     const DECK = 2.80;
     const WATCH = 2.30;
     const HISTORY_KEY = "bellbrook_history_direct_v2";
-    const APP_BUILD = "2026.09.21.3";
+    const APP_BUILD = "2026.09.21.4";
     const REQUEST_TIMEOUT_MS = 15000;
-    const HISTORY_WINDOW_MS = 12 * 60 * 60 * 1000;
+    const HISTORY_RETENTION_MS = 14 * 24 * 60 * 60 * 1000;
+    const RANGE_24H_MS = 24 * 60 * 60 * 1000;
+    let trendRangeMs = HISTORY_RETENTION_MS;
     const AEST_ZONE = "Australia/Brisbane";
     let chart;
     let currentHistory = [];
@@ -410,7 +413,7 @@
       if (!sorted.length) return [];
       // Keep the 12 hours ending at the latest captured observation. The UI
       // explicitly labels old/saved observations; never retimestamp them as live.
-      const cutoff = sorted[sorted.length - 1].stamp - HISTORY_WINDOW_MS;
+      const cutoff = sorted[sorted.length - 1].stamp - HISTORY_RETENTION_MS;
       return sorted.filter(h => h.stamp >= cutoff).slice(-1500);
     }
 
@@ -482,7 +485,8 @@
         ctx.fillText("No 12-hour table history returned yet.", width/2, height/2);
         ctx.textAlign="left"; return;
       }
-      const visible = history;
+      const endStamp = history[history.length - 1].stamp;
+      const visible = history.filter(h => h.stamp >= endStamp - trendRangeMs);
       const span = visible[visible.length - 1].stamp - visible[0].stamp;
       const x = i => span === 0 ? pad.l + plotW / 2 : pad.l + ((visible[i].stamp - visible[0].stamp) / span) * plotW;
       ctx.beginPath();
@@ -615,9 +619,7 @@
         document.getElementById("last-checked").textContent = "Floodwatch last checked: " + formatObservationTime(Date.now()).label + sourceNote + " Mirror observation age: about " + mirrorAgeMins + " min.";
         if (latest.stamp > Date.parse(obs.time)) setUnavailable("SOURCE RETURNED AN OLDER READING — LAST READING SHOWN");
         updateChart(currentHistory);
-        document.getElementById("trend-note").textContent = currentHistory.length > 1
-          ? currentHistory.length + " captured observations over " + ((latest.stamp - currentHistory[0].stamp) / 3600000).toFixed(1) + " hours, ending " + formatObservationTime(latest.stamp).label + "."
-          : "Only one captured observation is available. A trend needs more observations.";
+        updateTrendNote();
       } catch (error) {
         console.error(error);
         const timedOut = error.name === "TimeoutError";
@@ -726,6 +728,26 @@
       }
     });
 
+    function setTrendRange(ms) {
+      trendRangeMs = ms;
+      document.getElementById("trend-24h").className = ms === RANGE_24H_MS ? "btn secondary" : "btn light";
+      document.getElementById("trend-14d").className = ms === HISTORY_RETENTION_MS ? "btn secondary" : "btn light";
+      updateChart(currentHistory);
+      updateTrendNote();
+    }
+
+    function updateTrendNote() {
+      if (!currentHistory.length) return;
+      const latest = currentHistory[currentHistory.length - 1];
+      const visible = currentHistory.filter(h => h.stamp >= latest.stamp - trendRangeMs);
+      const rangeLabel = trendRangeMs === RANGE_24H_MS ? "24 hours" : "14 days";
+      document.getElementById("trend-note").textContent = visible.length > 1
+        ? visible.length + " actual captured observations in the selected " + rangeLabel + ", ending " + formatObservationTime(latest.stamp).label + "."
+        : visible.length + " actual captured observation in the selected " + rangeLabel + ". More source observations are needed for a trend.";
+    }
+
+    document.getElementById("trend-24h").addEventListener("click", () => setTrendRange(RANGE_24H_MS));
+    document.getElementById("trend-14d").addEventListener("click", () => setTrendRange(HISTORY_RETENTION_MS));
     document.getElementById("retry-gauge").addEventListener("click", () => update(true));
     // Start the gauge independently: a canvas/storage problem must not block it.
     update();
