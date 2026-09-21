@@ -2,11 +2,8 @@ name: Bellbrook camera capture prototype
 
 on:
   schedule:
-    # Offset from :00/:30 to reduce GitHub Actions schedule congestion; capture every 15 minutes.
+    # Capture every 15 minutes. A new archive frame is written only when the upstream JPEG changes.
     - cron: '7,22,37,52 * * * *'
-    # Redundant offset schedule: GitHub may delay/drop individual scheduled runs.
-    # The workflow de-duplicates captures into 15-minute UTC slots.
-    - cron: '14,29,44,59 * * * *'
   workflow_dispatch:
   push:
     paths:
