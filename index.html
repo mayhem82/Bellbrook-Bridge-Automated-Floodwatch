@@ -81,6 +81,7 @@
       background: rgba(255,255,255,0.14);
     }
 
+    .state-unavailable { background: #344b60; color: white; }
     .state-safe { background: linear-gradient(135deg, var(--safe), #20a862); }
     .state-watch { background: linear-gradient(135deg, var(--watch), #3d8bfd); }
     .state-warn { background: linear-gradient(135deg, var(--warn), #f0a202); color: #201400; }
@@ -330,7 +331,7 @@
     const DECK = 2.80;
     const WATCH = 2.30;
     const HISTORY_KEY = "bellbrook_history_direct_v2";
-    const APP_BUILD = "2026.09.21.1";
+    const APP_BUILD = "2026.09.21.2";
     const REQUEST_TIMEOUT_MS = 15000;
     const HISTORY_WINDOW_MS = 12 * 60 * 60 * 1000;
     const AEST_ZONE = "Australia/Brisbane";
@@ -502,7 +503,7 @@
 
     function setStatus(height) {
       const banner = document.getElementById("status-banner");
-      banner.classList.remove("state-safe", "state-watch", "state-warn", "state-closed");
+      banner.classList.remove("state-safe", "state-watch", "state-warn", "state-closed", "state-unavailable");
       if (height >= DECK) {
         banner.textContent = "DECK CONTACT — WATER AT OR ABOVE DECK";
         banner.classList.add("state-closed");
@@ -528,7 +529,7 @@
     function setUnavailable(message) {
       const banner = document.getElementById("status-banner");
       banner.textContent = message;
-      banner.className = "status-banner state-warn";
+      banner.className = "status-banner state-unavailable";
     }
 
     function renderObservation(obs) {
@@ -547,9 +548,6 @@
       document.getElementById("water-callout-value").textContent = bh.toFixed(2) + " m";
       setStatus(bh);
       setDataAge(time.date);
-      if (time.date && Date.now() - time.date.getTime() > 2 * 60 * 60 * 1000) {
-        setUnavailable("OBSERVATION OVER 2 HOURS OLD — CHECK BOM");
-      }
     }
 
     async function fetchJSON(url, timeoutMs = REQUEST_TIMEOUT_MS) {
@@ -614,7 +612,7 @@
             ? " — current feed reached; captured history unavailable."
             : " — current and captured observation feeds reached.";
         document.getElementById("last-checked").textContent = "Floodwatch last checked: " + formatObservationTime(Date.now()).label + sourceNote;
-        if (latest.stamp > Date.parse(obs.time)) setUnavailable("SOURCE RETURNED AN OLDER READING — CHECK BOM");
+        if (latest.stamp > Date.parse(obs.time)) setUnavailable("SOURCE RETURNED AN OLDER READING — LAST READING SHOWN");
         updateChart(currentHistory);
         document.getElementById("trend-note").textContent = currentHistory.length > 1
           ? currentHistory.length + " captured observations over " + ((latest.stamp - currentHistory[0].stamp) / 3600000).toFixed(1) + " hours, ending " + formatObservationTime(latest.stamp).label + "."
