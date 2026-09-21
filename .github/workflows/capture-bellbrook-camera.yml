@@ -56,3 +56,4 @@ jobs:
         run: |
           echo "Validation only: the fetched frame is intentionally not uploaded,"
           echo "committed, archived, or republished by this workflow."
+          echo "Future persistence is blocked until people and vehicles are blurred."
