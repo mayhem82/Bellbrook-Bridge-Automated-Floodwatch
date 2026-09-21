@@ -1,58 +1,66 @@
 #!/usr/bin/env python3
-"""Privacy-process a Bellbrook flood-camera frame.
+"""Render the Bellbrook flood-camera frame through the locked Cartoon Mode.
 
-Detect people and road vehicles with OpenCV's bundled MobileNet-SSD model and
-irreversibly Gaussian-blur padded detection regions before any persistence.
-Fails closed when the detector/model is unavailable.
+Single retained layer only. The source JPEG is transient and is never persisted.
+Locked Floodwatch parameters:
+- edge thickness: 1x
+- edge strength: 70%
 """
-import argparse, cv2, json, pathlib, sys
+import argparse, cv2, json, pathlib
+import numpy as np
 
-CLASSES = ["background","aeroplane","bicycle","bird","boat","bottle","bus","car","cat",
-           "chair","cow","diningtable","dog","horse","motorbike","person","pottedplant",
-           "sheep","sofa","train","tvmonitor"]
-PRIVATE = {"person","bicycle","bus","car","motorbike"}
-PADDING = 0.18
-# Fixed scene privacy zones cover the public gravel-bar/vehicle area where the
-# generic detector can miss small distant people or parked vehicles.
-# Coordinates are fractions of source width/height: x1,y1,x2,y2.
-FIXED_PRIVACY_ZONES = [(0.245,0.455,0.375,0.585),(0.475,0.680,0.625,0.825)]
+CARTOON_LEVELS = 6
+EDGE_THICKNESS = 1
+EDGE_STRENGTH = 70
+CARTOON_SATURATION = 135
+
+def cartoon(img):
+    # Smooth small photographic detail before colour quantisation.
+    smooth = cv2.bilateralFilter(img, 9, 80, 80)
+
+    # Match Color Vision's flat-colour concept: six bands per channel.
+    step = 256.0 / CARTOON_LEVELS
+    flat = (np.floor(smooth.astype(np.float32) / step) * step + step / 2.0)
+    flat = np.clip(flat, 0, 255).astype(np.uint8)
+
+    # Locked saturation = 135%.
+    hsv = cv2.cvtColor(flat, cv2.COLOR_BGR2HSV).astype(np.float32)
+    hsv[:,:,1] = np.clip(hsv[:,:,1] * (CARTOON_SATURATION / 100.0), 0, 255)
+    flat = cv2.cvtColor(hsv.astype(np.uint8), cv2.COLOR_HSV2BGR)
+
+    # Locked edge thickness 1x and strength 70%.
+    gray = cv2.cvtColor(smooth, cv2.COLOR_BGR2GRAY)
+    gray = cv2.medianBlur(gray, 5)
+    # Higher strength lowers the Canny thresholds so softer structural edges ink.
+    low = max(8, int(90 - EDGE_STRENGTH * 0.65))
+    high = max(low + 20, int(190 - EDGE_STRENGTH * 1.15))
+    edges = cv2.Canny(gray, low, high)
+    if EDGE_THICKNESS > 1:
+        k = np.ones((EDGE_THICKNESS, EDGE_THICKNESS), np.uint8)
+        edges = cv2.dilate(edges, k, iterations=1)
+    flat[edges > 0] = (0, 0, 0)
+    return flat
 
 def main():
     ap=argparse.ArgumentParser()
     ap.add_argument("src"); ap.add_argument("dst")
-    ap.add_argument("--proto",required=True); ap.add_argument("--model",required=True)
-    ap.add_argument("--confidence",type=float,default=0.30)
-    ap.add_argument("--report",default="privacy-report.json")
+    ap.add_argument("--report",default="cartoon-report.json")
     a=ap.parse_args()
     img=cv2.imread(a.src)
-    if img is None: raise SystemExit("Cannot decode source image")
-    net=cv2.dnn.readNetFromCaffe(a.proto,a.model)
-    h,w=img.shape[:2]
-    blob=cv2.dnn.blobFromImage(cv2.resize(img,(300,300)),0.007843,(300,300),127.5)
-    net.setInput(blob); detections=net.forward()
-    hits=[]
-    # Apply deterministic fixed-scene privacy first. This is deliberately
-    # conservative: privacy does not depend on detector confidence.
-    for n,(fx1,fy1,fx2,fy2) in enumerate(FIXED_PRIVACY_ZONES,1):
-        x1,y1,x2,y2=int(fx1*w),int(fy1*h),int(fx2*w),int(fy2*h)
-        roi=img[y1:y2,x1:x2]
-        k=max(31,min(151,(min(roi.shape[:2])//2)|1))
-        img[y1:y2,x1:x2]=cv2.GaussianBlur(roi,(k,k),0)
-        hits.append({"class":"fixed-privacy-zone","confidence":1.0,"box":[x1,y1,x2,y2],"zone":n})
-    for i in range(detections.shape[2]):
-        conf=float(detections[0,0,i,2]); idx=int(detections[0,0,i,1])
-        if conf < a.confidence or idx >= len(CLASSES) or CLASSES[idx] not in PRIVATE: continue
-        x1,y1,x2,y2=(detections[0,0,i,3:7]*[w,h,w,h]).astype(int)
-        pad_x=int(max(1,x2-x1)*PADDING); pad_y=int(max(1,y2-y1)*PADDING)
-        x1=max(0,x1-pad_x); y1=max(0,y1-pad_y); x2=min(w,x2+pad_x); y2=min(h,y2+pad_y)
-        if x2<=x1 or y2<=y1: continue
-        roi=img[y1:y2,x1:x2]
-        # Large irreversible blur; odd kernel bounded by region dimensions.
-        k=max(15,min(99,(min(roi.shape[:2])//3)|1))
-        img[y1:y2,x1:x2]=cv2.GaussianBlur(roi,(k,k),0)
-        hits.append({"class":CLASSES[idx],"confidence":round(conf,3),"box":[x1,y1,x2,y2]})
-    if not cv2.imwrite(a.dst,img,[cv2.IMWRITE_JPEG_QUALITY,75]):
-        raise SystemExit("Could not write privacy-processed frame")
-    pathlib.Path(a.report).write_text(json.dumps({"detections":hits,"count":len(hits)},indent=2)+"\n")
-    print(f"privacy blur applied to {len(hits)} detected people/vehicle regions")
-if __name__=="__main__": main()
+    if img is None:
+        raise SystemExit("Cannot decode source image")
+    out=cartoon(img)
+    if not cv2.imwrite(a.dst,out,[cv2.IMWRITE_JPEG_QUALITY,78]):
+        raise SystemExit("Could not write cartoon frame")
+    report={
+      "mode":"cartoon-only",
+      "cartoon_levels":CARTOON_LEVELS,
+      "edge_thickness_x":EDGE_THICKNESS,
+      "edge_strength_percent":EDGE_STRENGTH,
+      "saturation_percent":CARTOON_SATURATION
+    }
+    pathlib.Path(a.report).write_text(json.dumps(report,indent=2)+"\n")
+    print("cartoon frame rendered: edge thickness 1x; edge strength 70%")
+
+if __name__=="__main__":
+    main()
