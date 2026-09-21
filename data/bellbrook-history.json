@@ -400,5 +400,23 @@
     "height": 0.37,
     "datetime": "2026-09-21T13:07:00+10:00",
     "source": "BOM official table"
+  },
+  {
+    "station_id": "059122",
+    "height": 0.37,
+    "datetime": "2026-09-21T16:07:00+10:00",
+    "source": "BOM official table"
+  },
+  {
+    "station_id": "059122",
+    "height": 0.38,
+    "datetime": "2026-09-21T07:27:00+00:00",
+    "source": "OpenDataSoft mirror"
+  },
+  {
+    "station_id": "059122",
+    "height": 0.38,
+    "datetime": "2026-09-21T17:27:00+10:00",
+    "source": "BOM official table"
   }
 ]
