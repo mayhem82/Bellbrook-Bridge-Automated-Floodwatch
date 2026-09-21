@@ -308,6 +308,7 @@
         <div class="tools">
           <a href="https://www.kempsey.nsw.gov.au/Your-Valley/Disaster-emergency/Flood-information-cameras/Flood-cameras" target="_blank" rel="noopener" class="btn secondary">View live Bellbrook webcam</a>
           <a href="https://www.bom.gov.au/fwo/IDN60232/IDN60232.059122.tbl.shtml" target="_blank" rel="noopener" class="btn secondary">Check official BOM Bellbrook table</a>
+          <a href="https://www.mhl.nsw.gov.au/Data-Level" target="_blank" rel="noopener" class="btn secondary">Check MHL water-level network</a>
           <button id="refresh-gauge" class="btn" type="button" onclick="update(true)">Refresh gauge now</button>
           <button id="install-app" class="btn secondary" type="button">Install Floodwatch</button>
           <button id="update-app" class="btn secondary" type="button">Update Floodwatch</button>
@@ -329,10 +330,11 @@
   <script>
     const DATA_URL = "https://australiademo.opendatasoft.com/api/explore/v2.1/catalog/datasets/bom-river-heights-data/records?where=station_id%3D%22059122%22&order_by=datetime%20DESC&limit=100";
     const HISTORY_URL = "https://australiademo.opendatasoft.com/api/explore/v2.1/catalog/datasets/bom-river-heights-data-historical/records?where=station_id%3D%22059122%22%20AND%20datetime%3E%3Dnow(days%3D-14)&order_by=datetime%20DESC&limit=100";
+    const CAPTURED_HISTORY_URL = "./data/bellbrook-history.json";
     const DECK = 2.80;
     const WATCH = 2.30;
     const HISTORY_KEY = "bellbrook_history_direct_v2";
-    const APP_BUILD = "2026.09.21.5";
+    const APP_BUILD = "2026.09.21.6";
     const REQUEST_TIMEOUT_MS = 15000;
     const HISTORY_RETENTION_MS = 14 * 24 * 60 * 60 * 1000;
     const RANGE_24H_MS = 24 * 60 * 60 * 1000;
@@ -482,7 +484,7 @@
       });
       if (!history.length) {
         ctx.fillStyle="#66788a"; ctx.textAlign="center";
-        ctx.fillText("No 12-hour table history returned yet.", width/2, height/2);
+        ctx.fillText("No observations returned for the selected range yet.", width/2, height/2);
         ctx.textAlign="left"; return;
       }
       const endStamp = history[history.length - 1].stamp;
@@ -608,13 +610,14 @@
       try {
         const results = await Promise.allSettled([
           fetchAllHistory(),
+          fetchJSON(CAPTURED_HISTORY_URL + "?cache=" + Date.now()).then(rows => ({ results: Array.isArray(rows) ? rows : [] })),
           fetchJSON(DATA_URL + "&cache=" + Date.now()).then(payload => {
             if (!readObservation(payload)) throw new Error("No valid Bellbrook 059122 observation found.");
             return payload;
           })
         ]);
         const feeds = results.filter(result => result.status === "fulfilled");
-        if (!feeds.length) throw results[1].reason;
+        if (!feeds.length) throw (results[2].reason || results[1].reason || results[0].reason);
         // Current-feed values take precedence for duplicate observation times.
         const payload = { results: feeds.flatMap(result => result.value.results) };
         const obs = readObservation(payload);
@@ -624,14 +627,15 @@
         const latest = currentHistory[currentHistory.length - 1];
         lastObservation = { height: latest.height, time: new Date(latest.stamp).toISOString() };
         renderObservation(lastObservation);
-        const sourceNote = results[1].status === "rejected"
-          ? " — current feed unavailable; captured observations shown."
-          : results[0].status === "rejected"
-            ? " — current feed reached; captured history unavailable."
-            : " — current and captured observation feeds reached.";
+        const reached = [
+          results[2].status === "fulfilled" ? "current mirror" : null,
+          results[0].status === "fulfilled" ? "historical mirror" : null,
+          results[1].status === "fulfilled" ? "Floodwatch server history" : null
+        ].filter(Boolean);
+        const sourceNote = " — reached: " + reached.join(", ") + ".";
         const mirrorAgeMins = Math.max(0, Math.round((Date.now() - latest.stamp) / 60000));
         document.getElementById("last-checked").textContent = "Floodwatch last checked: " + formatObservationTime(Date.now()).label + sourceNote + " Mirror observation age: about " + mirrorAgeMins + " min.";
-        if (latest.stamp > Date.parse(obs.time)) setUnavailable("SOURCE RETURNED AN OLDER READING — LAST READING SHOWN");
+        if (obs && latest.stamp > Date.parse(obs.time)) setUnavailable("SOURCE RETURNED AN OLDER READING — LAST READING SHOWN");
         updateChart(currentHistory);
         updateTrendNote();
       } catch (error) {
