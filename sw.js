@@ -1,5 +1,75 @@
-const CACHE="bellbrook-floodwatch-v3";
-const CORE=["./","./index.html","./about.html","./icon-192.png","./icon-512.png","./manifest.webmanifest"];
-self.addEventListener("install",e=>{self.skipWaiting();e.waitUntil(caches.open(CACHE).then(c=>c.addAll(CORE)))});
-self.addEventListener("activate",e=>e.waitUntil(Promise.all([caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))),self.clients.claim()])));
-self.addEventListener("message",e=>{if(e.data&&e.data.type==="SKIP_WAITING")self.skipWaiting()});\nself.addEventListener("fetch",e=>{if(e.request.method!=="GET")return;e.respondWith(fetch(e.request).catch(()=>caches.match(e.request)))});
+const CACHE_PREFIX = "bellbrook-floodwatch-";
+const CACHE = CACHE_PREFIX + "v4-2026.09.21.1";
+const CORE = ["./", "./index.html", "./about.html", "./icon-192.png", "./icon-512.png", "./manifest.webmanifest"];
+
+async function fetchWithDeadline(request, timeoutMs = 6000) {
+  const controller = new AbortController();
+  let timer;
+  try {
+    return await Promise.race([
+      fetch(request, { cache: "no-store", signal: controller.signal }).then(async response => {
+        // Include the response body in the deadline, not just its headers.
+        await response.clone().arrayBuffer();
+        return response;
+      }),
+      new Promise((resolve, reject) => {
+        timer = setTimeout(() => {
+          reject(new Error("App request timed out."));
+          controller.abort();
+        }, timeoutMs);
+      })
+    ]);
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+self.addEventListener("install", event => {
+  event.waitUntil((async () => {
+    const cache = await caches.open(CACHE);
+    await Promise.all(CORE.map(async path => {
+      const url = new URL(path, self.registration.scope).href;
+      const response = await fetchWithDeadline(url, 12000);
+      if (!response.ok) throw new Error("App download HTTP " + response.status);
+      await cache.put(url, response);
+    }));
+    await self.skipWaiting();
+  })());
+});
+
+self.addEventListener("activate", event => {
+  event.waitUntil((async () => {
+    const keys = await caches.keys();
+    await Promise.all(keys.filter(key => key.startsWith(CACHE_PREFIX) && key !== CACHE).map(key => caches.delete(key)));
+    await self.clients.claim();
+  })());
+});
+
+self.addEventListener("message", event => {
+  if (event.data && event.data.type === "SKIP_WAITING") event.waitUntil(self.skipWaiting());
+});
+
+self.addEventListener("fetch", event => {
+  if (event.request.method !== "GET") return;
+  const url = new URL(event.request.url);
+  const scope = new URL(self.registration.scope);
+  // Gauge requests use the page's own deadline and are never cached as live data.
+  if (url.origin !== scope.origin || !url.pathname.startsWith(scope.pathname)) return;
+  const cacheKey = url.origin + url.pathname;
+  event.respondWith((async () => {
+    try {
+      const response = await fetchWithDeadline(event.request);
+      if (!response.ok) throw new Error("App request HTTP " + response.status);
+      const copy = response.clone();
+      await caches.open(CACHE).then(cache => cache.put(cacheKey, copy)).catch(() => {});
+      return response;
+    } catch (error) {
+      const cache = await caches.open(CACHE);
+      const saved = await cache.match(cacheKey);
+      if (saved) return saved;
+      return new Response("Floodwatch is offline. Reconnect and reload.", {
+        status: 503, headers: { "Content-Type": "text/plain; charset=utf-8" }
+      });
+    }
+  })());
+});

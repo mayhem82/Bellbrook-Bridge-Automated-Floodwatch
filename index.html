@@ -26,6 +26,8 @@
     }
 
     * { box-sizing: border-box; }
+    [hidden] { display: none !important; }
+    .btn:disabled { opacity: 0.65; cursor: wait; }
 
     body {
       margin: 0;
@@ -246,7 +248,8 @@
       <h1 id="page-title">Bridge gauge, clearance, and crossing status.</h1>
       <p class="hero-sub">Uses a current mirror of Bureau of Meteorology river-height observations for Bellbrook station 059122, compares the latest valid reading against the 2.80 m bridge deck, and refreshes every 5 minutes. Treat this as a local decision aid and verify against official warnings and the live camera during flood conditions.</p>
       <div class="status-strip">
-        <div id="status-banner" class="status-banner">LOADING GAUGE DATA</div>
+        <div id="status-banner" class="status-banner" role="status" aria-live="polite">LOADING GAUGE DATA</div>
+        <button id="retry-gauge" class="btn secondary" type="button" hidden>Retry gauge data</button>
       </div>
     </section>
 
@@ -295,7 +298,7 @@
       <div class="card chart-card">
         <span class="label">12-hour Bellbrook trend</span>
         <canvas id="floodChart"></canvas>
-        <p class="small-note">Trend is rebuilt from the captured Bellbrook observation table each refresh, so it does not depend on when this app was opened.</p>
+        <p id="trend-note" class="small-note">Trend is rebuilt from the captured Bellbrook observation table each refresh, so it does not depend on when this app was opened.</p>
       </div>
 
       <div class="card chart-card">
@@ -303,35 +306,44 @@
         <div class="tools">
           <a href="https://www.kempsey.nsw.gov.au/Your-Valley/Disaster-emergency/Flood-information-cameras/Flood-cameras" target="_blank" rel="noopener" class="btn secondary">View live Bellbrook webcam</a>
           <a href="https://www.bom.gov.au/fwo/IDN60232/IDN60232.059122.tbl.shtml" target="_blank" rel="noopener" class="btn secondary">Check official BOM Bellbrook table</a>
-          <button class="btn" onclick="update(true)">Refresh gauge now</button>
-          <button id="install-app" class="btn secondary" type="button">Install Floodwatch</button>\n          <button id="update-app" class="btn secondary" type="button">Update Floodwatch</button>
+          <button id="refresh-gauge" class="btn" type="button" onclick="update(true)">Refresh gauge now</button>
+          <button id="install-app" class="btn secondary" type="button">Install Floodwatch</button>
+          <button id="update-app" class="btn secondary" type="button">Update Floodwatch</button>
           <button class="btn light" onclick="clearHistory()">Clear saved trend + refresh</button>
           <a href="about.html" class="btn light">About project / mission</a>
         </div>
-        <p id="app-update-status" class="small-note"><strong>App version:</strong> checking for updates...</p>\n        <p class="small-note"><strong>Install Floodwatch:</strong> The same install button works on supported phones and desktop computers. On Android, the Floodwatch icon may appear in your Apps screen/app drawer rather than directly on the Home screen. On a PC using a supported browser such as Chrome or Edge, choose <strong>Install Floodwatch</strong>; the installed app is available from your computer’s apps/start menu and can be pinned or have a desktop shortcut created. The installed app uses the Floodwatch bridge-and-water icon.</p>
+        <p id="app-update-status" class="small-note"><strong>App version:</strong> checking for updates...</p>
+        <p class="small-note"><strong>Install Floodwatch:</strong> The same install button works on supported phones and desktop computers. On Android, the Floodwatch icon may appear in your Apps screen/app drawer rather than directly on the Home screen. On a PC using a supported browser such as Chrome or Edge, choose <strong>Install Floodwatch</strong>; the installed app is available from your computer’s apps/start menu and can be pinned or have a desktop shortcut created. The installed app uses the Floodwatch bridge-and-water icon.</p>
         <p class="small-note"><strong>Reading looks stale?</strong> Open “Check official BOM Bellbrook table” and compare the latest timestamp for station 059122. This lets you see whether BOM itself has not published a newer Bellbrook observation or whether Floodwatch needs refreshing.</p>
         <p class="small-note">The gauge card is deliberately plain and high-contrast so it can be read fast on a phone in poor weather.</p>
       </div>
     </section>
 
     <footer class="footer-note">
-      <strong>Bellbrook Bridge Automated Floodwatch.</strong> River-height observations: Bureau of Meteorology data via the current OpenDataSoft mirror, station 059122. Deck reference: 2.80 m. All displayed observation times are local Bellbrook time. Status thresholds are local dashboard thresholds, not a substitute for emergency services advice.
+      <strong>Bellbrook Bridge Automated Floodwatch.</strong> River-height observations: Bureau of Meteorology data via the current OpenDataSoft mirror, station 059122. Deck reference: 2.80 m. All displayed observation times are AEST (UTC+10). Status thresholds are local dashboard thresholds, not a substitute for emergency services advice.
     </footer>
   </main>
 
   <script>
     const DATA_URL = "https://australiademo.opendatasoft.com/api/explore/v2.1/catalog/datasets/bom-river-heights-data/records?where=station_id%3D%22059122%22&order_by=datetime%20DESC&limit=100";
+    const HISTORY_URL = DATA_URL.replace("/bom-river-heights-data/", "/bom-river-heights-data-historical/");
     const DECK = 2.80;
     const WATCH = 2.30;
-    const HISTORY_KEY = "bellbrook_history_direct_v2";\n    const APP_BUILD = "2026.09.20.1";
+    const HISTORY_KEY = "bellbrook_history_direct_v2";
+    const APP_BUILD = "2026.09.21.1";
+    const REQUEST_TIMEOUT_MS = 15000;
+    const HISTORY_WINDOW_MS = 12 * 60 * 60 * 1000;
+    const AEST_ZONE = "Australia/Brisbane";
     let chart;
+    let currentHistory = [];
+    let lastObservation = null;
+    let activeRequest = null;
 
     function initChart() {
       chart = document.getElementById("floodChart");
       loadHistory();
       window.addEventListener("resize", () => {
-        const history = safeReadHistory();
-        updateChart(history);
+        updateChart(currentHistory);
       });
     }
 
@@ -354,43 +366,22 @@
       }
     }
 
-    function parseCSV(text) {
-      const rows = [];
-      let row = [];
-      let cell = "";
-      let quoted = false;
-      for (let i = 0; i < text.length; i++) {
-        const ch = text[i];
-        const next = text[i + 1];
-        if (ch === '"' && quoted && next === '"') { cell += '"'; i++; continue; }
-        if (ch === '"') { quoted = !quoted; continue; }
-        if (ch === "," && !quoted) { row.push(cell.trim()); cell = ""; continue; }
-        if ((ch === "\n" || ch === "\r") && !quoted) {
-          if (ch === "\r" && next === "\n") i++;
-          row.push(cell.trim());
-          if (row.some(Boolean)) rows.push(row);
-          row = [];
-          cell = "";
-          continue;
-        }
-        cell += ch;
-      }
-      row.push(cell.trim());
-      if (row.some(Boolean)) rows.push(row);
-      return rows;
+    function validObservations(payload) {
+      if (!payload || !Array.isArray(payload.results)) return [];
+      return payload.results.filter(r =>
+        r && r.station_id === "059122" &&
+        (typeof r.height === "number" || typeof r.height === "string") &&
+        String(r.height).trim() !== "" &&
+        Number.isFinite(Number(r.height)) &&
+        typeof r.datetime === "string" &&
+        Number.isFinite(Date.parse(r.datetime)) &&
+        Date.parse(r.datetime) <= Date.now() + 5 * 60 * 1000
+      );
     }
 
     function readObservation(payload) {
-      if (!payload || !Array.isArray(payload.results)) return null;
-      const valid = payload.results
-        .filter(r =>
-          r.station_id === "059122" &&
-          r.height !== null &&
-          r.height !== undefined &&
-          Number.isFinite(Number(r.height)) &&
-          r.datetime
-        )
-        .sort((a, b) => new Date(b.datetime) - new Date(a.datetime));
+      const valid = validObservations(payload)
+        .sort((a, b) => Date.parse(b.datetime) - Date.parse(a.datetime));
       if (!valid.length) return null;
       return { height: Number(valid[0].height), time: valid[0].datetime };
     }
@@ -399,43 +390,51 @@
       const obsDate = new Date(raw);
       if (Number.isNaN(obsDate.getTime())) return { label: raw || "Unknown time", date: null };
       return {
-        label: obsDate.toLocaleString("en-AU", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" }),
+        label: obsDate.toLocaleString("en-AU", { timeZone: AEST_ZONE, day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" }) + " AEST",
         date: obsDate
       };
     }
 
-    function tableHistory(payload) {
-      if (!payload || !Array.isArray(payload.results)) return [];
-      const cutoff = Date.now() - (12 * 60 * 60 * 1000);
+    function normaliseHistory(history) {
       const byTime = new Map();
-      payload.results.forEach(r => {
-        if (r.station_id !== "059122" || !r.datetime || !Number.isFinite(Number(r.height))) return;
-        const d = new Date(r.datetime);
-        if (Number.isNaN(d.getTime()) || d.getTime() < cutoff) return;
-        byTime.set(d.toISOString(), {
-          height: Number(r.height),
-          time: d.toLocaleString("en-AU", { day:"2-digit", month:"short", hour:"2-digit", minute:"2-digit" }),
-          stamp: d.getTime()
+      history.forEach(h => {
+        if (!h || !Number.isFinite(h.height) || !Number.isFinite(h.stamp)) return;
+        if (h.stamp > Date.now() + 5 * 60 * 1000) return;
+        byTime.set(h.stamp, {
+          height: h.height, stamp: h.stamp,
+          time: formatObservationTime(h.stamp).label
         });
       });
-      return Array.from(byTime.values()).sort((a,b) => a.stamp - b.stamp);
+      const sorted = Array.from(byTime.values()).sort((a, b) => a.stamp - b.stamp);
+      if (!sorted.length) return [];
+      // Keep the 12 hours ending at the latest captured observation. The UI
+      // explicitly labels old/saved observations; never retimestamp them as live.
+      const cutoff = sorted[sorted.length - 1].stamp - HISTORY_WINDOW_MS;
+      return sorted.filter(h => h.stamp >= cutoff).slice(-1500);
     }
 
-    function saveHistory(height, time) {
-      // Fallback only. Normal trend data is rebuilt from the captured source table.
-      const history = safeReadHistory();
-      if (!history.some(h => h.time === time)) history.push({ height, time });
-      while (history.length > 1500) history.shift();
-      safeWriteHistory(history);
+    function tableHistory(payload) {
+      return normaliseHistory(validObservations(payload).map(r => ({
+        height: Number(r.height), stamp: Date.parse(r.datetime)
+      })));
     }
 
     function clearHistory() {
       try { localStorage.removeItem(HISTORY_KEY); } catch (error) { console.warn(error); }
+      currentHistory = [];
+      updateChart(currentHistory);
       update(true);
     }
 
     function loadHistory() {
-      updateChart([]);
+      currentHistory = normaliseHistory(safeReadHistory());
+      updateChart(currentHistory);
+      if (!currentHistory.length) return;
+      const last = currentHistory[currentHistory.length - 1];
+      lastObservation = { height: last.height, time: new Date(last.stamp).toISOString() };
+      renderObservation(lastObservation);
+      setUnavailable("SAVED READING — CHECKING FOR NEW DATA");
+      document.getElementById("trend-note").textContent = "Saved observations shown while checking the source. Times are AEST.";
     }
 
     function updateChart(history) {
@@ -446,14 +445,16 @@
       const height = 310;
       chart.width = Math.round(width * dpr);
       chart.height = Math.round(height * dpr);
-      const ctx = chart.getContext("2d");
+      let ctx;
+      try { ctx = chart.getContext("2d"); } catch (error) { console.warn("Chart unavailable:", error); return; }
+      if (!ctx) return;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.clearRect(0, 0, width, height);
 
       const pad = { l: 42, r: 14, t: 14, b: 30 };
       const plotW = width - pad.l - pad.r;
       const plotH = height - pad.t - pad.b;
-      const maxY = 3.4;
+      const maxY = Math.max(3.4, ...history.map(h => h.height + 0.3));
       const y = v => pad.t + plotH - (Math.max(0, Math.min(maxY, v)) / maxY) * plotH;
 
       ctx.font = "12px system-ui, sans-serif";
@@ -481,7 +482,8 @@
         ctx.textAlign="left"; return;
       }
       const visible = history;
-      const x = i => visible.length === 1 ? pad.l + plotW/2 : pad.l + (i/(visible.length-1))*plotW;
+      const span = visible[visible.length - 1].stamp - visible[0].stamp;
+      const x = i => span === 0 ? pad.l + plotW / 2 : pad.l + ((visible[i].stamp - visible[0].stamp) / span) * plotW;
       ctx.beginPath();
       visible.forEach((h,i) => {
         const px=x(i), py=y(Number(h.height));
@@ -523,45 +525,122 @@
       el.textContent = diffMins < 60 ? `Data age: about ${diffMins} min.` : `Data age: about ${(diffMins / 60).toFixed(1)} hr.`;
     }
 
-    async function update(manual = false) {
+    function setUnavailable(message) {
+      const banner = document.getElementById("status-banner");
+      banner.textContent = message;
+      banner.className = "status-banner state-warn";
+    }
+
+    function renderObservation(obs) {
+      const bh = obs.height;
+      const clearance = DECK - bh;
+      const relative = bh - DECK;
+      const time = formatObservationTime(obs.time);
+      const fillPct = Math.max(3, Math.min(100, (bh / DECK) * 93));
+      document.getElementById("clearance").textContent = clearance.toFixed(2) + " m";
+      document.getElementById("water-level").textContent = bh.toFixed(2) + " m";
+      document.getElementById("deck-relative").textContent = (relative >= 0 ? "+" : "") + relative.toFixed(2) + " m";
+      document.getElementById("time").textContent = "Latest gauge observation: " + time.label;
+      document.getElementById("clearance-note").textContent = clearance > 0 ? "Water was below the 2.80 m deck at this observation." : clearance === 0 ? "Water was at the 2.80 m deck at this observation." : "Water was above the 2.80 m deck at this observation.";
+      document.getElementById("water-fill").style.height = fillPct + "%";
+      document.getElementById("water-callout").style.top = Math.max(8, Math.min(92, 100 - fillPct)) + "%";
+      document.getElementById("water-callout-value").textContent = bh.toFixed(2) + " m";
+      setStatus(bh);
+      setDataAge(time.date);
+      if (time.date && Date.now() - time.date.getTime() > 2 * 60 * 60 * 1000) {
+        setUnavailable("OBSERVATION OVER 2 HOURS OLD — CHECK BOM");
+      }
+    }
+
+    async function fetchJSON(url, timeoutMs = REQUEST_TIMEOUT_MS) {
+      const controller = new AbortController();
+      let timer;
+      const deadline = new Promise((resolve, reject) => {
+        timer = setTimeout(() => {
+          const error = new Error("Gauge request timed out.");
+          error.name = "TimeoutError";
+          reject(error);
+          controller.abort();
+        }, timeoutMs);
+      });
       try {
-        const res = await fetch(DATA_URL + "&cache=" + Date.now(), { cache: "no-store" });
-        if (!res.ok) throw new Error("Floodwatch mirror HTTP " + res.status);
-        const payload = await res.json();
+        return await Promise.race([
+          fetch(url, { cache: "no-store", signal: controller.signal }).then(res => {
+            if (!res.ok) throw new Error("Floodwatch mirror HTTP " + res.status);
+            return res.json();
+          }),
+          deadline
+        ]);
+      } finally {
+        clearTimeout(timer);
+      }
+    }
+
+    function update(manual = false) {
+      if (activeRequest) return activeRequest;
+      activeRequest = refreshGauge(manual).finally(() => { activeRequest = null; });
+      return activeRequest;
+    }
+
+    async function refreshGauge(manual) {
+      const refreshButton = document.getElementById("refresh-gauge");
+      const retryButton = document.getElementById("retry-gauge");
+      refreshButton.disabled = true;
+      refreshButton.textContent = "Checking gauge…";
+      retryButton.hidden = true;
+      document.getElementById("status-banner").setAttribute("aria-busy", "true");
+      if (!lastObservation) setUnavailable("LOADING GAUGE DATA — UP TO 15 SECONDS");
+      document.getElementById("last-checked").textContent = "Floodwatch: checking the source…";
+      try {
+        const results = await Promise.allSettled([HISTORY_URL, DATA_URL].map(async url => {
+          const payload = await fetchJSON(url + "&cache=" + Date.now());
+          if (!readObservation(payload)) throw new Error("No valid Bellbrook 059122 observation found.");
+          return payload;
+        }));
+        const feeds = results.filter(result => result.status === "fulfilled");
+        if (!feeds.length) throw results[1].reason;
+        // Current-feed values take precedence for duplicate observation times.
+        const payload = { results: feeds.flatMap(result => result.value.results) };
         const obs = readObservation(payload);
-        if (!obs) throw new Error("No valid Bellbrook 059122 observation found.");
-
-        const bh = obs.height;
-        const clearance = DECK - bh;
-        const relative = bh - DECK;
-        const time = formatObservationTime(obs.time);
-        const fillPct = Math.max(3, Math.min(100, (bh / DECK) * 93));
-        const calloutTop = Math.max(8, Math.min(92, 100 - fillPct));
-
-        document.getElementById("clearance").textContent = clearance.toFixed(2) + " m";
-        document.getElementById("water-level").textContent = bh.toFixed(2) + " m";
-        document.getElementById("deck-relative").textContent = (relative >= 0 ? "+" : "") + relative.toFixed(2) + " m";
-        document.getElementById("time").textContent = "Latest gauge observation: " + time.label;
-        document.getElementById("last-checked").innerHTML = "<strong>Floodwatch last checked:</strong> " + new Date().toLocaleTimeString("en-AU", { hour: "2-digit", minute: "2-digit" }) + " — source reached successfully";
-        document.getElementById("clearance-note").textContent = clearance >= 0 ? "Water remains below the 2.80 m deck reference." : "Water is above the 2.80 m deck reference.";
-        document.getElementById("water-fill").style.height = fillPct + "%";
-        document.getElementById("water-callout").style.top = calloutTop + "%";
-        document.getElementById("water-callout-value").textContent = bh.toFixed(2) + " m";
-
-        setStatus(bh);
-        setDataAge(time.date);
-        const sourceHistory = tableHistory(payload);\n        if (sourceHistory.length) updateChart(sourceHistory);\n        else { saveHistory(bh, time.label); updateChart(safeReadHistory()); }
+        currentHistory = normaliseHistory([...currentHistory, ...tableHistory(payload)]);
+        safeWriteHistory(currentHistory);
+        // A delayed response must not replace a newer saved observation.
+        const latest = currentHistory[currentHistory.length - 1];
+        lastObservation = { height: latest.height, time: new Date(latest.stamp).toISOString() };
+        renderObservation(lastObservation);
+        const sourceNote = results[1].status === "rejected"
+          ? " — current feed unavailable; captured observations shown."
+          : results[0].status === "rejected"
+            ? " — current feed reached; captured history unavailable."
+            : " — current and captured observation feeds reached.";
+        document.getElementById("last-checked").textContent = "Floodwatch last checked: " + formatObservationTime(Date.now()).label + sourceNote;
+        if (latest.stamp > Date.parse(obs.time)) setUnavailable("SOURCE RETURNED AN OLDER READING — CHECK BOM");
+        updateChart(currentHistory);
+        document.getElementById("trend-note").textContent = currentHistory.length > 1
+          ? currentHistory.length + " captured observations over " + ((latest.stamp - currentHistory[0].stamp) / 3600000).toFixed(1) + " hours, ending " + formatObservationTime(latest.stamp).label + "."
+          : "Only one captured observation is available. A trend needs more observations.";
       } catch (error) {
         console.error(error);
-        const banner = document.getElementById("status-banner");
-        banner.textContent = manual ? "REFRESH FAILED — CHECK CONNECTION" : "DATA LOAD FAILED";
-        banner.className = "status-banner state-warn";
-        document.getElementById("last-checked").innerHTML = "<strong>Floodwatch last checked:</strong> " + new Date().toLocaleTimeString("en-AU", { hour: "2-digit", minute: "2-digit" }) + " — check failed";
+        const timedOut = error.name === "TimeoutError";
+        const message = timedOut ? "DATA REQUEST TIMED OUT" : manual ? "REFRESH FAILED" : "DATA UNAVAILABLE";
+        setUnavailable(message + (lastObservation ? " — LAST READING SHOWN" : " — RETRY BELOW"));
+        document.getElementById("last-checked").textContent = "Floodwatch last checked: " + formatObservationTime(Date.now()).label + (timedOut ? " — no response within 15 seconds." : " — source check failed.");
+        if (lastObservation) setDataAge(new Date(lastObservation.time));
+        document.getElementById("trend-note").textContent = currentHistory.length
+          ? "Saved observations only. The latest source check failed; original observation times are shown."
+          : "No captured history is available. Retry or check the official BOM table.";
+        retryButton.hidden = false;
+      } finally {
+        refreshButton.disabled = false;
+        refreshButton.textContent = "Refresh gauge now";
+        document.getElementById("status-banner").setAttribute("aria-busy", "false");
       }
     }
 
     let deferredInstallPrompt = null;
-    const installButton = document.getElementById("install-app");\n    const updateButton = document.getElementById("update-app");\n    const updateStatus = document.getElementById("app-update-status");
+    const installButton = document.getElementById("install-app");
+    const updateButton = document.getElementById("update-app");
+    const updateStatus = document.getElementById("app-update-status");
 
     window.addEventListener("beforeinstallprompt", event => {
       event.preventDefault();
@@ -579,13 +658,80 @@
       alert("If an install prompt is not shown, use your browser menu and choose Install app / Install Floodwatch. On Android, check your Apps screen. On PC, check your apps or Start menu and pin Floodwatch or create a desktop shortcut if wanted.");
     });
 
-    if ("serviceWorker" in navigator) {
-      window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js"));
+    let appRegistration = null;
+    let reloadForUpdate = false;
+    let updateFallbackTimer;
+    updateStatus.textContent = "App version: " + APP_BUILD;
+
+    function reloadLatestApp() {
+      if (!reloadForUpdate) return;
+      reloadForUpdate = false;
+      clearTimeout(updateFallbackTimer);
+      const url = new URL(window.location.href);
+      url.searchParams.set("app-update", Date.now());
+      window.location.replace(url.href);
     }
 
-    initChart();
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.addEventListener("controllerchange", reloadLatestApp);
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("./sw.js", { updateViaCache: "none" })
+          .then(registration => { appRegistration = registration; })
+          .catch(error => {
+            console.warn("App update registration unavailable:", error);
+            updateStatus.textContent = "App version: " + APP_BUILD + " — offline installation unavailable; you can still update online.";
+          });
+      });
+    }
+
+    updateButton.addEventListener("click", async () => {
+      updateButton.disabled = true;
+      updateStatus.textContent = "Checking for the latest Floodwatch version…";
+      let deadline;
+      try {
+        // One deadline covers registration, download and installation.
+        await Promise.race([
+          (async () => {
+            if (!("serviceWorker" in navigator)) return;
+            const registration = appRegistration || await navigator.serviceWorker.register("./sw.js", { updateViaCache: "none" });
+            await registration.update();
+            if (registration.installing) {
+              await new Promise((resolve, reject) => {
+                const worker = registration.installing;
+                const check = () => {
+                  if (worker.state === "installed" || worker.state === "activated") { worker.removeEventListener("statechange", check); resolve(); }
+                  else if (worker.state === "redundant") { worker.removeEventListener("statechange", check); reject(new Error("App installation failed.")); }
+                };
+                worker.addEventListener("statechange", check);
+                check();
+              });
+            }
+            appRegistration = registration;
+          })(),
+          new Promise((resolve, reject) => { deadline = setTimeout(() => reject(new Error("App update timed out. Check your connection and try again.")), REQUEST_TIMEOUT_MS); })
+        ]);
+        clearTimeout(deadline);
+        reloadForUpdate = true;
+        if (appRegistration && appRegistration.waiting) {
+          updateFallbackTimer = setTimeout(reloadLatestApp, 2000);
+          appRegistration.waiting.postMessage({ type: "SKIP_WAITING" });
+        } else {
+          reloadLatestApp();
+        }
+      } catch (error) {
+        reloadForUpdate = false;
+        updateStatus.textContent = "App version: " + APP_BUILD + " — " + error.message;
+        updateButton.disabled = false;
+      } finally {
+        clearTimeout(deadline);
+      }
+    });
+
+    document.getElementById("retry-gauge").addEventListener("click", () => update(true));
+    // Start the gauge independently: a canvas/storage problem must not block it.
     update();
-    setInterval(update, 300000);
+    try { initChart(); } catch (error) { console.error("Chart unavailable:", error); }
+    setInterval(() => update(), 300000);
   </script>
 </body>
 </html>
