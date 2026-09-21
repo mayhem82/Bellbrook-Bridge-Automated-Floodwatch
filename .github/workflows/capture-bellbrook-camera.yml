@@ -52,6 +52,27 @@ jobs:
           printf '\nHTTP response headers:\n'
           cat headers.txt
 
+      - name: Install privacy detector
+        run: |
+          python3 -m pip install --disable-pip-version-check opencv-python-headless==4.10.0.84
+          curl --fail --location --silent --show-error --max-time 30 \
+            -o deploy.prototxt \
+            https://raw.githubusercontent.com/chuanqi305/MobileNet-SSD/master/deploy.prototxt
+          curl --fail --location --silent --show-error --max-time 60 \
+            -o mobilenet.caffemodel \
+            https://github.com/chuanqi305/MobileNet-SSD/raw/master/mobilenet_iter_73000.caffemodel
+
+      - name: Apply mandatory people and vehicle blur
+        run: |
+          set -euo pipefail
+          python3 scripts/privacy_blur_camera.py \
+            bellbrook-source.jpeg bellbrook-private.jpeg \
+            --proto deploy.prototxt \
+            --model mobilenet.caffemodel \
+            --report privacy-report.json
+          test -s bellbrook-private.jpeg
+          cat privacy-report.json
+
       - name: Do not persist camera imagery
         run: |
           echo "Validation only: the fetched frame is intentionally not uploaded,"
