@@ -27,7 +27,8 @@ jobs:
           curl -fsSL --max-time 25 "https://public.disasterwatch-iotp.com.au/prospectpublicimages/1662/Bellbrook%20Bridge.jpeg" -o /tmp/bellbrook.jpg
           NEW_SHA=$(sha256sum /tmp/bellbrook.jpg | cut -d' ' -f1)
           OLD_SHA=$(cat camera/source.sha256 2>/dev/null || true)
-          if [ "$NEW_SHA" != "$OLD_SHA" ]; then
+          # Always archive the camera presented at each scheduled cycle. The embedded camera timestamp is authoritative for later duplicate review.
+          if [ -s /tmp/bellbrook.jpg ]; then
             python -m pip install --quiet opencv-python-headless
             python scripts/privacy_blur_camera.py /tmp/bellbrook.jpg /tmp/private.jpg
             TS=$(date -u +%Y%m%dT%H%M%SZ)
