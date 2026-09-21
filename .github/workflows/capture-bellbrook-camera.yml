@@ -2,7 +2,8 @@ name: Bellbrook camera capture prototype
 
 on:
   schedule:
-    - cron: '*/30 * * * *'
+    # Offset from :00/:30 to reduce GitHub Actions schedule congestion; capture every 15 minutes.
+    - cron: '7,22,37,52 * * * *'
   workflow_dispatch:
   push:
     paths:
