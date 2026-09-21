@@ -363,6 +363,7 @@
     function initChart() {
       chart = document.getElementById("floodChart");
       loadHistory();
+      bindTrendInteraction();
       window.addEventListener("resize", () => {
         updateChart(currentHistory);
       });
@@ -560,7 +561,17 @@
       detail.innerHTML="<strong>"+Number(best.h.height).toFixed(2)+" m</strong> · "+formatObservationTime(best.h.stamp).label+" · observation "+(best.i+1)+" of "+visible.length;
     }
 
-    chart && chart.addEventListener("pointerup",e=>selectTrendPoint(e.clientX,e.clientY));
+    function bindTrendInteraction(){
+      if(!chart)return;
+      const pick=e=>{
+        const p=e.changedTouches&&e.changedTouches[0]?e.changedTouches[0]:e;
+        selectTrendPoint(p.clientX,p.clientY);
+      };
+      chart.addEventListener("click",pick);
+      chart.addEventListener("touchend",pick,{passive:true});
+      chart.style.touchAction="pan-y";
+      chart.style.cursor="pointer";
+    }
 
     function setStatus(height) {
       const banner = document.getElementById("status-banner");
