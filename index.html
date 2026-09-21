@@ -510,7 +510,15 @@
         const px=x(i), py=y(Number(h.height));
         if(i===0) ctx.moveTo(px,py); else ctx.lineTo(px,py);
       });
-      ctx.lineWidth=4; ctx.strokeStyle="#2166a5"; ctx.setLineDash([]); ctx.stroke();
+      ctx.lineWidth=3; ctx.strokeStyle="#2166a5"; ctx.setLineDash([]); ctx.stroke();
+
+      // Draw every captured table observation as an individually visible point.
+      visible.forEach((h,i) => {
+        const px=x(i), py=y(Number(h.height));
+        ctx.fillStyle="#2166a5";
+        ctx.beginPath(); ctx.arc(px,py,3.5,0,Math.PI*2); ctx.fill();
+        ctx.strokeStyle="#fff"; ctx.lineWidth=1.25; ctx.stroke();
+      });
       const last=visible[visible.length-1], lx=x(visible.length-1), ly=y(Number(last.height));
       ctx.fillStyle="#2166a5"; ctx.beginPath(); ctx.arc(lx,ly,6,0,Math.PI*2); ctx.fill();
       ctx.strokeStyle="#fff"; ctx.lineWidth=2; ctx.stroke();
