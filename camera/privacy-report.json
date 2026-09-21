@@ -1,0 +1,27 @@
+{
+  "detections": [
+    {
+      "class": "fixed-privacy-zone",
+      "confidence": 1.0,
+      "box": [
+        470,
+        491,
+        720,
+        631
+      ],
+      "zone": 1
+    },
+    {
+      "class": "fixed-privacy-zone",
+      "confidence": 1.0,
+      "box": [
+        912,
+        734,
+        1200,
+        891
+      ],
+      "zone": 2
+    }
+  ],
+  "count": 2
+}
