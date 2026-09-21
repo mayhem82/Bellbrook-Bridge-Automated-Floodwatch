@@ -83,7 +83,7 @@ jobs:
           set -euo pipefail
           python3 - <<'PY'
           import cv2, json, pathlib
-          img=cv2.imread("bellbrook-private.jpeg")
+          img=cv2.imread("bellbrook-cartoon.jpeg")
           h,w=img.shape[:2]
           nw=640; nh=round(h*nw/w)
           img=cv2.resize(img,(nw,nh),interpolation=cv2.INTER_AREA)
@@ -94,7 +94,7 @@ jobs:
           cv2.imwrite(str(root/"latest.jpg"),img,[cv2.IMWRITE_JPEG_QUALITY,72])
           stamp=datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
           cv2.imwrite(str(frames/(stamp+".jpg")),img,[cv2.IMWRITE_JPEG_QUALITY,68])
-          pathlib.Path(root/"privacy-report.json").write_text(pathlib.Path("privacy-report.json").read_text())
+          pathlib.Path(root/"cartoon-report.json").write_text(pathlib.Path("cartoon-report.json").read_text())
           kept=sorted(frames.glob("*.jpg"))
           for old in kept[:-336]:
               old.unlink()
@@ -103,8 +103,8 @@ jobs:
           PY
           git config user.name "bellbrook-floodwatch-bot"
           git config user.email "actions@users.noreply.github.com"
-          git add camera/latest.jpg camera/privacy-report.json camera/manifest.json camera/frames
+          git add camera/latest.jpg camera/cartoon-report.json camera/manifest.json camera/frames
           if git diff --cached --quiet; then exit 0; fi
-          git commit -m "Update privacy-processed Bellbrook camera frame"
+          git commit -m "Update Cartoon Mode Bellbrook camera frame"
           git pull --rebase
           git push
