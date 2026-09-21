@@ -306,7 +306,7 @@
       <div class="card chart-card">
         <span class="label">Bellbrook camera time-lapse</span>
         <img id="cameraLatest" src="camera/latest.jpg" alt="Cartoon Mode Bellbrook Bridge camera frame" style="width:100%;display:block;border-radius:18px;margin-top:10px">
-        <p class="small-note"><strong>Capture active:</strong> Floodwatch retains up to 7 days of captured frames. Locked rendering: 1× edge thickness, 70% edge strength. Every retained frame is shown below and included in time-lapse playback.</p><div id="timelapse-gallery" style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-top:10px"></div>
+        <p class="small-note"><strong>Capture active:</strong> Floodwatch retains up to 7 days of captured frames. Locked rendering: 1× edge thickness, 70% edge strength.</p><details style="margin-top:10px"><summary style="cursor:pointer;font-weight:700;padding:8px 0">Captured frames <span id="timelapse-count"></span></summary><div id="timelapse-gallery" style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-top:8px"></div></details><label for="timelapse-speed" class="small-note" style="display:block;margin-top:12px"><strong>Time-lapse speed:</strong> <span id="timelapse-speed-label">0.18 sec/frame</span></label><input id="timelapse-speed" type="range" min="100" max="2000" step="50" value="180" style="width:100%;margin:4px 0 8px" aria-label="Time-lapse speed">
         <div class="tools" style="grid-template-columns:repeat(2,minmax(0,1fr));margin-top:10px">
           <button id="timelapse-play" class="btn secondary" type="button">Play time-lapse</button>
           <button id="timelapse-stop" class="btn light" type="button">Stop</button>
@@ -783,7 +783,7 @@
   
   let timelapseTimer=null, timelapseFrames=[], timelapseIndex=0, timelapsePlaying=false;
   const TIMELAPSE_FALLBACK_FRAMES=["20260921T065843Z.jpg","20260921T072618Z.jpg","20260921T133659Z.jpg","20260921T185832Z.jpg","20260921T194335Z.jpg","20260921T194739Z.jpg"];
-  const TIMELAPSE_FRAME_MS=180;
+  let timelapseFrameMs=180;
   async function loadTimelapse(){
     const status=document.getElementById("timelapse-status");
     try{
@@ -796,7 +796,7 @@
   function renderTimelapseGallery(){
     const gallery=document.getElementById("timelapse-gallery");
     if(!gallery)return;
-    gallery.replaceChildren();
+    gallery.replaceChildren(); const count=document.getElementById("timelapse-count"); if(count)count.textContent="("+timelapseFrames.length+")";
     timelapseFrames.forEach((name,i)=>{
       const item=document.createElement("button");
       item.type="button";
@@ -831,11 +831,18 @@
       setTimeout(()=>{ if(!timelapsePlaying) document.getElementById("cameraLatest").src="camera/latest.jpg?v="+Date.now(); },700);
     }
   }
+  const timelapseSpeed=document.getElementById("timelapse-speed");
+  const timelapseSpeedLabel=document.getElementById("timelapse-speed-label");
+  timelapseSpeed.addEventListener("input",()=>{
+    timelapseFrameMs=Number(timelapseSpeed.value);
+    timelapseSpeedLabel.textContent=(timelapseFrameMs/1000).toFixed(2).replace(/0$/,"")+" sec/frame";
+    if(timelapsePlaying){ clearInterval(timelapseTimer); timelapseTimer=setInterval(showTimelapseFrame,timelapseFrameMs); }
+  });
   document.getElementById("timelapse-play").addEventListener("click",()=>{
     clearInterval(timelapseTimer); timelapseTimer=null; timelapsePlaying=false;
     if(timelapseFrames.length<2){ document.getElementById("timelapse-status").textContent="Only "+timelapseFrames.length+" frame is currently loaded — refresh the page to reload the archive."; return; }
     timelapseIndex=0; timelapsePlaying=true; showTimelapseFrame();
-    timelapseTimer=setInterval(showTimelapseFrame,TIMELAPSE_FRAME_MS);
+    timelapseTimer=setInterval(showTimelapseFrame,timelapseFrameMs);
   });
   document.getElementById("timelapse-stop").addEventListener("click",()=>{ clearInterval(timelapseTimer); timelapseTimer=null; timelapsePlaying=false; document.getElementById("cameraLatest").src="camera/latest.jpg?v="+Date.now(); loadTimelapse(); });
   loadTimelapse();
