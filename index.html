@@ -506,6 +506,18 @@
       const visible = history.filter(h => h.stamp >= endStamp - trendRangeMs);
       const span = visible[visible.length - 1].stamp - visible[0].stamp;
       const x = i => span === 0 ? pad.l + plotW / 2 : pad.l + ((visible[i].stamp - visible[0].stamp) / span) * plotW;
+      // Fill the area below the observed water-level line.
+      ctx.beginPath();
+      visible.forEach((h,i) => {
+        const px=x(i), py=y(Number(h.height));
+        if(i===0) ctx.moveTo(px,py); else ctx.lineTo(px,py);
+      });
+      ctx.lineTo(x(visible.length-1),y(0));
+      ctx.lineTo(x(0),y(0));
+      ctx.closePath();
+      ctx.fillStyle="rgba(33,102,165,.20)";
+      ctx.fill();
+
       ctx.beginPath();
       visible.forEach((h,i) => {
         const px=x(i), py=y(Number(h.height));
