@@ -22,15 +22,28 @@ jobs:
           python-version: "3.12"
       - name: Capture Bellbrook observations
         run: python scripts/capture_bellbrook_history.py
+      - name: Capture changed Bellbrook camera
+        run: |
+          curl -fsSL --max-time 25 "https://public.disasterwatch-iotp.com.au/prospectpublicimages/1662/Bellbrook%20Bridge.jpeg" -o /tmp/bellbrook.jpg
+          NEW_SHA=$(sha256sum /tmp/bellbrook.jpg | cut -d' ' -f1)
+          OLD_SHA=$(cat camera/source.sha256 2>/dev/null || true)
+          if [ "$NEW_SHA" != "$OLD_SHA" ]; then
+            python -m pip install --quiet opencv-python-headless
+            python scripts/privacy_blur_camera.py /tmp/bellbrook.jpg /tmp/private.jpg
+            TS=$(date -u +%Y%m%dT%H%M%SZ)
+            python -c "import cv2; im=cv2.imread('/tmp/private.jpg'); h,w=im.shape[:2]; out=cv2.resize(im,(640,round(h*640/w)),interpolation=cv2.INTER_AREA); cv2.imwrite('camera/latest.jpg',out,[int(cv2.IMWRITE_JPEG_QUALITY),82]); cv2.imwrite('camera/frames/'+'$TS'+'.jpg',out,[int(cv2.IMWRITE_JPEG_QUALITY),82])"
+            echo "$NEW_SHA" > camera/source.sha256
+            python -c "import pathlib,json; fs=sorted(x.name for x in pathlib.Path('camera/frames').glob('*.jpg'))[-672:]; pathlib.Path('camera/manifest.json').write_text(json.dumps({'updated_utc':'$TS','frames':fs},indent=2)+'\\n')"
+          fi
       - name: Commit new observations
         run: |
-          if git diff --quiet -- data/bellbrook-history.json; then
+          if git diff --quiet -- data/bellbrook-history.json camera/; then
             echo "No new observation."
             exit 0
           fi
           git config user.name "bellbrook-floodwatch-bot"
           git config user.email "actions@users.noreply.github.com"
-          git add data/bellbrook-history.json
+          git add data/bellbrook-history.json camera/
           git commit -m "Capture Bellbrook gauge observations"
           git pull --rebase
           git push
