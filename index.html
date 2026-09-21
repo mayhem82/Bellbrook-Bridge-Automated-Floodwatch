@@ -334,7 +334,7 @@
     const DECK = 2.80;
     const WATCH = 2.30;
     const HISTORY_KEY = "bellbrook_history_direct_v2";
-    const APP_BUILD = "2026.09.21.6";
+    const APP_BUILD = "2026.09.21.7";
     const REQUEST_TIMEOUT_MS = 15000;
     const HISTORY_RETENTION_MS = 14 * 24 * 60 * 60 * 1000;
     const RANGE_24H_MS = 24 * 60 * 60 * 1000;
@@ -498,8 +498,6 @@
       });
       ctx.lineWidth=4; ctx.strokeStyle="#2166a5"; ctx.setLineDash([]); ctx.stroke();
       const last=visible[visible.length-1], lx=x(visible.length-1), ly=y(Number(last.height));
-      ctx.strokeStyle="#2166a5"; ctx.lineWidth=3;
-      ctx.beginPath(); ctx.moveTo(lx,y(0)); ctx.lineTo(lx,ly); ctx.stroke();
       ctx.fillStyle="#2166a5"; ctx.beginPath(); ctx.arc(lx,ly,6,0,Math.PI*2); ctx.fill();
       ctx.strokeStyle="#fff"; ctx.lineWidth=2; ctx.stroke();
       ctx.fillStyle="#66788a"; ctx.font="11px system-ui, sans-serif";
