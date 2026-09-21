@@ -359,6 +359,7 @@
     let currentHistory = [];
     let lastObservation = null;
     let activeRequest = null;
+    let selectedTrendIndex = null;
 
     function initChart() {
       chart = document.getElementById("floodChart");
@@ -526,6 +527,19 @@
       });
       ctx.lineWidth=3; ctx.strokeStyle="#2166a5"; ctx.setLineDash([]); ctx.stroke();
 
+      if(selectedTrendIndex!==null && selectedTrendIndex>=0 && selectedTrendIndex<visible.length){
+        const sh=visible[selectedTrendIndex], sx=x(selectedTrendIndex), sy=y(Number(sh.height));
+        ctx.strokeStyle="#10202f"; ctx.lineWidth=2.5;
+        ctx.beginPath(); ctx.arc(sx,sy,9,0,Math.PI*2); ctx.stroke();
+        const label=Number(sh.height).toFixed(2)+" m";
+        ctx.font="bold 13px system-ui, sans-serif";
+        const tw=ctx.measureText(label).width+16, th=28;
+        let tx=Math.max(pad.l,Math.min(width-pad.r-tw,sx-tw/2));
+        let ty=sy>55?sy-38:sy+14;
+        ctx.fillStyle="#10202f"; ctx.beginPath(); ctx.roundRect(tx,ty,tw,th,8); ctx.fill();
+        ctx.fillStyle="#fff"; ctx.textAlign="center"; ctx.fillText(label,tx+tw/2,ty+19); ctx.textAlign="left";
+      }
+
       // Draw every captured table observation as an individually visible point.
       visible.forEach((h,i) => {
         const px=x(i), py=y(Number(h.height));
@@ -556,19 +570,21 @@
       const px=(clientX-rect.left)*(width/rect.width), py=(clientY-rect.top)*(height/rect.height);
       let best=null, bestD=Infinity;
       visible.forEach((h,i)=>{const dx=x(i)-px,dy=y(Number(h.height))-py,d=dx*dx+dy*dy;if(d<bestD){bestD=d;best={h,i};}});
-      if(!best || bestD>28*28)return;
+      if(!best)return;
+      selectedTrendIndex=best.i;
+      updateChart(currentHistory);
       const detail=document.getElementById("trend-point-detail");
       detail.innerHTML="<strong>"+Number(best.h.height).toFixed(2)+" m</strong> · "+formatObservationTime(best.h.stamp).label+" · observation "+(best.i+1)+" of "+visible.length;
     }
 
     function bindTrendInteraction(){
       if(!chart)return;
-      const pick=e=>{
-        const p=e.changedTouches&&e.changedTouches[0]?e.changedTouches[0]:e;
-        selectTrendPoint(p.clientX,p.clientY);
-      };
-      chart.addEventListener("click",pick);
-      chart.addEventListener("touchend",pick,{passive:true});
+      let tracking=false;
+      const pick=e=>selectTrendPoint(e.clientX,e.clientY);
+      chart.addEventListener("pointerdown",e=>{tracking=true;chart.setPointerCapture?.(e.pointerId);pick(e);});
+      chart.addEventListener("pointermove",e=>{if(tracking)pick(e);});
+      chart.addEventListener("pointerup",e=>{if(tracking)pick(e);tracking=false;});
+      chart.addEventListener("pointercancel",()=>{tracking=false;});
       chart.style.touchAction="pan-y";
       chart.style.cursor="pointer";
     }
