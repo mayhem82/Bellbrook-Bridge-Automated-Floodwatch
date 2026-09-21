@@ -303,8 +303,11 @@
         <p id="trend-note" class="small-note">Trend is rebuilt from the captured Bellbrook observation table each refresh, so it does not depend on when this app was opened.</p>
       </div>
 
+
       <div class="card chart-card">
-        <button id="timelapse-panel-toggle" class="btn secondary" type="button" aria-expanded="false" style="width:100%">Open camera time-lapse ▾</button>
+        <span class="label">Live tools</span>
+        <div style="margin-top:10px">
+          <button id="timelapse-panel-toggle" class="btn secondary" type="button" aria-expanded="false" style="width:100%">Open camera time-lapse ▾</button>
         <div id="timelapse-panel" hidden style="display:none;margin-top:10px">
         <span class="label">Bellbrook camera time-lapse</span>
         <img id="cameraLatest" src="camera/latest.jpg" alt="Cartoon Mode Bellbrook Bridge camera frame" style="width:100%;display:block;border-radius:18px;margin-top:10px">
@@ -315,9 +318,7 @@
         </div>
         <p id="timelapse-status" class="small-note">Loading retained camera frames…</p>
         </div>
-      </div>
-      <div class="card chart-card">
-        <span class="label">Live tools</span>
+        </div>
         <div class="tools">
           <a href="https://www.kempsey.nsw.gov.au/Your-Valley/Disaster-emergency/Flood-information-cameras/Flood-cameras" target="_blank" rel="noopener" class="btn secondary">View live Bellbrook webcam</a>
           <a href="https://www.bom.gov.au/fwo/IDN60232/IDN60232.059122.tbl.shtml" target="_blank" rel="noopener" class="btn secondary">Check official BOM Bellbrook table</a>
