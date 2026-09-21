@@ -22,19 +22,11 @@ jobs:
           python-version: "3.12"
       - name: Inspect official BOM table shape
         run: |
-          python - <<'PY'
-          import re, urllib.request
-          from html import unescape
-          url="https://www.bom.gov.au/fwo/IDN60232/IDN60232.059122.tbl.shtml"
-          req=urllib.request.Request(url,headers={"User-Agent":"Bellbrook-Floodwatch/1.0"})
-          with urllib.request.urlopen(req,timeout=20) as r: page=r.read().decode("utf-8","replace")
-          rows=re.findall(r"<tr\\b[^>]*>(.*?)</tr>",page,re.I|re.S)
-          print("BOM_BYTES",len(page),"BOM_ROWS",len(rows),"START",repr(page[:1200]))
-          for row in rows[:40]:
-              cells=[re.sub(r"\\s+"," ",unescape(re.sub(r"<[^>]+>"," ",c))).strip() for c in re.findall(r"<t[dh]\\b[^>]*>(.*?)</t[dh]>",row,re.I|re.S)]
-              if cells: print("BOM_ROW",repr(cells))
-          PY
-      - name: Capture current Bellbrook observations
+          curl --fail --silent --show-error --max-time 20 -A 'Bellbrook-Floodwatch/1.0' \
+            'https://www.bom.gov.au/fwo/IDN60232/IDN60232.059122.tbl.shtml' -o /tmp/bom.html
+          echo "BOM bytes: $(wc -c < /tmp/bom.html)"
+          grep -i '<tr' /tmp/bom.html | head -40 || true
+      - name: Capture Bellbrook observations
         run: python scripts/capture_bellbrook_history.py
       - name: Commit new observations
         run: |
@@ -45,5 +37,5 @@ jobs:
           git config user.name "bellbrook-floodwatch-bot"
           git config user.email "actions@users.noreply.github.com"
           git add data/bellbrook-history.json
-          git commit -m "Capture Bellbrook gauge observation"
+          git commit -m "Capture Bellbrook gauge observations"
           git push
