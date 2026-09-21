@@ -305,8 +305,13 @@
 
       <div class="card chart-card">
         <span class="label">Bellbrook camera time-lapse</span>
-        <img src="camera/latest.jpg" alt="Privacy-processed Bellbrook Bridge camera frame" style="width:100%;display:block;border-radius:18px;margin-top:10px">
-        <p class="small-note"><strong>Capture active:</strong> Floodwatch retains a privacy-processed frame every 30 minutes. Time-lapse history begins with the first retained frame and grows automatically.</p>
+        <img id="cameraLatest" src="camera/latest.jpg" alt="Privacy-processed Bellbrook Bridge camera frame" style="width:100%;display:block;border-radius:18px;margin-top:10px">
+        <p class="small-note"><strong>Capture active:</strong> Floodwatch retains a privacy-processed frame every 30 minutes. Use the controls below to replay every retained frame.</p>
+        <div class="tools" style="grid-template-columns:repeat(2,minmax(0,1fr));margin-top:10px">
+          <button id="timelapse-play" class="btn secondary" type="button">Play time-lapse</button>
+          <button id="timelapse-stop" class="btn light" type="button">Stop</button>
+        </div>
+        <p id="timelapse-status" class="small-note">Loading retained camera frames…</p>
       </div>
 
       <div class="card chart-card">
@@ -340,7 +345,7 @@
     const DECK = 2.80;
     const WATCH = 2.30;
     const HISTORY_KEY = "bellbrook_history_direct_v2";
-    const APP_BUILD = "2026.09.21.8";
+    const APP_BUILD = "2026.09.21.9";
     const REQUEST_TIMEOUT_MS = 15000;
     const HISTORY_RETENTION_MS = 14 * 24 * 60 * 60 * 1000;
     const RANGE_24H_MS = 24 * 60 * 60 * 1000;
@@ -775,6 +780,26 @@
     update();
     try { initChart(); } catch (error) { console.error("Chart unavailable:", error); }
     setInterval(() => update(), 300000);
-  </script>
+  
+  let timelapseTimer=null, timelapseFrames=[], timelapseIndex=0;
+  async function loadTimelapse(){
+    const status=document.getElementById("timelapse-status");
+    try{
+      const r=await fetch("camera/manifest.json?ts="+Date.now(),{cache:"no-store"});
+      if(!r.ok) throw new Error("manifest "+r.status);
+      const m=await r.json(); timelapseFrames=Array.isArray(m.frames)?m.frames:[];
+      status.textContent=timelapseFrames.length===1?"1 retained frame — time-lapse capture has started.":timelapseFrames.length+" retained frames available.";
+    }catch(e){ status.textContent="Camera history unavailable: "+e.message; }
+  }
+  function showTimelapseFrame(){
+    if(!timelapseFrames.length)return;
+    document.getElementById("cameraLatest").src="camera/frames/"+timelapseFrames[timelapseIndex]+"?v="+Date.now();
+    document.getElementById("timelapse-status").textContent="Frame "+(timelapseIndex+1)+" of "+timelapseFrames.length+" • "+timelapseFrames[timelapseIndex];
+    timelapseIndex=(timelapseIndex+1)%timelapseFrames.length;
+  }
+  document.getElementById("timelapse-play").addEventListener("click",()=>{ clearInterval(timelapseTimer); timelapseIndex=0; showTimelapseFrame(); timelapseTimer=setInterval(showTimelapseFrame,500); });
+  document.getElementById("timelapse-stop").addEventListener("click",()=>{ clearInterval(timelapseTimer); timelapseTimer=null; document.getElementById("cameraLatest").src="camera/latest.jpg?v="+Date.now(); loadTimelapse(); });
+  loadTimelapse();
+</script>
 </body>
 </html>
