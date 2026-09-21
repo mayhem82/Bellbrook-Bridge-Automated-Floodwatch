@@ -830,10 +830,9 @@
       setTimeout(()=>{ if(!timelapsePlaying) document.getElementById("cameraLatest").src="camera/latest.jpg?v="+Date.now(); },700);
     }
   }
-  document.getElementById("timelapse-play").addEventListener("click",async()=>{
+  document.getElementById("timelapse-play").addEventListener("click",()=>{
     clearInterval(timelapseTimer); timelapseTimer=null; timelapsePlaying=false;
-    await loadTimelapse();
-    if(timelapseFrames.length<2){ document.getElementById("timelapse-status").textContent="Not enough captured frames to play a time-lapse yet."; return; }
+    if(timelapseFrames.length<2){ document.getElementById("timelapse-status").textContent="Only "+timelapseFrames.length+" frame is currently loaded — refresh the page to reload the archive."; return; }
     timelapseIndex=0; timelapsePlaying=true; showTimelapseFrame();
     timelapseTimer=setInterval(showTimelapseFrame,TIMELAPSE_FRAME_MS);
   });
