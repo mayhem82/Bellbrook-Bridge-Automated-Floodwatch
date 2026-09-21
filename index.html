@@ -357,7 +357,7 @@
     const DECK = 2.80;
     const WATCH = 2.30;
     const HISTORY_KEY = "bellbrook_history_direct_v2";
-    const APP_BUILD = "2026.09.21.10";
+    const APP_BUILD = "2026.09.22.12";
     const REQUEST_TIMEOUT_MS = 15000;
     const HISTORY_RETENTION_MS = 14 * 24 * 60 * 60 * 1000;
     const RANGE_24H_MS = 24 * 60 * 60 * 1000;
@@ -868,9 +868,14 @@
   async function loadTimelapse(){
     const status=document.getElementById("timelapse-status");
     try{
-      const r=await fetch("camera/manifest.json?v="+Date.now(),{cache:"no-store"});
+      const manifestUrl=new URL("camera/manifest.json",location.href);
+      manifestUrl.searchParams.set("v",Date.now());
+      const r=await fetch(manifestUrl.href,{cache:"no-store"});
       if(!r.ok) throw new Error("manifest "+r.status);
-      const m=await r.json();
+      const manifestText=await r.text();
+      let m;
+      try{ m=JSON.parse(manifestText); }
+      catch(error){ throw new Error("manifest returned non-JSON content"); }
       const manifestFrames=Array.isArray(m.frames)?m.frames:[];
       if(manifestFrames.length){
         timelapseFrames=[...new Set(manifestFrames)].sort();
