@@ -304,6 +304,8 @@
       </div>
 
       <div class="card chart-card">
+        <button id="timelapse-panel-toggle" class="btn secondary" type="button" aria-expanded="false" style="width:100%">Open camera time-lapse ▾</button>
+        <div id="timelapse-panel" hidden style="display:none;margin-top:10px">
         <span class="label">Bellbrook camera time-lapse</span>
         <img id="cameraLatest" src="camera/latest.jpg" alt="Cartoon Mode Bellbrook Bridge camera frame" style="width:100%;display:block;border-radius:18px;margin-top:10px">
         <p class="small-note"><strong>Capture active:</strong> Floodwatch retains up to 7 days of captured frames. Locked rendering: 1× edge thickness, 70% edge strength.</p><button id="timelapse-gallery-toggle" class="btn light" type="button" aria-expanded="false" style="width:100%;margin-top:10px">Show captured frames <span id="timelapse-count"></span> ▾</button><div id="timelapse-gallery" hidden style="grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-top:8px"></div><label for="timelapse-speed" class="small-note" style="display:block;margin-top:12px"><strong>Time-lapse speed:</strong> <span id="timelapse-speed-label">0.18 sec/frame</span></label><input id="timelapse-speed" type="range" min="100" max="2000" step="50" value="180" style="width:100%;margin:4px 0 8px" aria-label="Time-lapse speed">
@@ -312,8 +314,8 @@
           <button id="timelapse-stop" class="btn light" type="button">Stop</button>
         </div>
         <p id="timelapse-status" class="small-note">Loading retained camera frames…</p>
+        </div>
       </div>
-
       <div class="card chart-card">
         <span class="label">Live tools</span>
         <div class="tools">
@@ -831,6 +833,15 @@
       setTimeout(()=>{ if(!timelapsePlaying) document.getElementById("cameraLatest").src="camera/latest.jpg?v="+Date.now(); },700);
     }
   }
+  const timelapsePanelToggle=document.getElementById("timelapse-panel-toggle");
+  const timelapsePanel=document.getElementById("timelapse-panel");
+  timelapsePanelToggle.addEventListener("click",()=>{
+    const opening=timelapsePanel.hidden;
+    timelapsePanel.hidden=!opening;
+    timelapsePanel.style.display=opening?"block":"none";
+    timelapsePanelToggle.setAttribute("aria-expanded",String(opening));
+    timelapsePanelToggle.textContent=opening?"Close camera time-lapse ▴":"Open camera time-lapse ▾";
+  });
   const galleryToggle=document.getElementById("timelapse-gallery-toggle");
   const galleryPanel=document.getElementById("timelapse-gallery");
   galleryToggle.addEventListener("click",()=>{
