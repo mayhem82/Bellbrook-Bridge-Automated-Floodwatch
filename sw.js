@@ -1,5 +1,5 @@
 const CACHE_PREFIX = "bellbrook-floodwatch-";
-const CACHE = CACHE_PREFIX + "v4-2026.09.21.10";
+const CACHE = CACHE_PREFIX + "v4-2026.09.22.11";
 const CORE = ["./", "./index.html", "./about.html", "./icon-192.png", "./icon-512.png", "./manifest.webmanifest"];
 
 async function fetchWithDeadline(request, timeoutMs = 6000) {
@@ -56,17 +56,22 @@ self.addEventListener("fetch", event => {
   // Gauge requests use the page's own deadline and are never cached as live data.
   if (url.origin !== scope.origin || !url.pathname.startsWith(scope.pathname)) return;
   const cacheKey = url.origin + url.pathname;
+  const isCamera = url.pathname.includes("/camera/");
   event.respondWith((async () => {
     try {
-      const response = await fetchWithDeadline(event.request);
+      const response = await fetchWithDeadline(isCamera ? new Request(event.request, { cache: "no-store" }) : event.request);
       if (!response.ok) throw new Error("App request HTTP " + response.status);
-      const copy = response.clone();
-      await caches.open(CACHE).then(cache => cache.put(cacheKey, copy)).catch(() => {});
+      if (!isCamera) {
+        const copy = response.clone();
+        await caches.open(CACHE).then(cache => cache.put(cacheKey, copy)).catch(() => {});
+      }
       return response;
     } catch (error) {
-      const cache = await caches.open(CACHE);
-      const saved = await cache.match(cacheKey);
-      if (saved) return saved;
+      if (!isCamera) {
+        const cache = await caches.open(CACHE);
+        const saved = await cache.match(cacheKey);
+        if (saved) return saved;
+      }
       return new Response("Floodwatch is offline. Reconnect and reload.", {
         status: 503, headers: { "Content-Type": "text/plain; charset=utf-8" }
       });
