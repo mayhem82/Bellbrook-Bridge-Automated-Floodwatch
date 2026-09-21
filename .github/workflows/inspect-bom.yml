@@ -8,23 +8,29 @@ permissions:
 jobs:
   inspect:
     runs-on: ubuntu-latest
-    timeout-minutes: 2
+    timeout-minutes: 3
     steps:
-      - name: List official Bellbrook data products
+      - name: Read official Bellbrook observations
         run: |
           python - <<'PY'
           from ftplib import FTP
+          import re
           with FTP('ftp.bom.gov.au', timeout=20) as ftp:
               ftp.login()
               ftp.cwd('/anon/gen/fwo')
               names = ftp.nlst()
-              selected = [n for n in names if n.startswith(('IDN60232', 'IDN60141')) or (n.startswith('IDN') and n.lower().endswith(('.hcs', '.csv')))]
-              print('Matched official product names:', selected)
+              selected = ['IDN60141.html']
+              for prefix in ['IDN65900_', 'IDN65901_', 'IDN65910_', 'IDN65911_']:
+                  matches = sorted(n for n in names if n.startswith(prefix) and n.endswith('.hcs'))
+                  if matches: selected.append(matches[-1])
               for name in selected:
-                  if name.startswith('IDN60232') and ('059122' in name or name.count('.') == 1):
-                      chunks = []
-                      ftp.retrbinary('RETR ' + name, chunks.append)
-                      data = b''.join(chunks)
-                      print('PRODUCT', name, 'BYTES', len(data))
-                      print(data.decode('utf-8', errors='replace')[:45000])
+                  chunks = []
+                  ftp.retrbinary('RETR ' + name, chunks.append)
+                  data = b''.join(chunks).decode('utf-8', errors='replace')
+                  lines = data.splitlines()
+                  print('PRODUCT', name, 'BYTES', len(data), 'LINES', len(lines))
+                  print('HEADER', '\\n'.join(lines[:12]))
+                  for i, line in enumerate(lines):
+                      if re.search('059122|Bellbrook', line, re.I):
+                          print('BELLBROOK RECORD', '\\n'.join(lines[max(0, i-3):i+8]))
           PY
