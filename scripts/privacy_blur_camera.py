@@ -12,6 +12,10 @@ CLASSES = ["background","aeroplane","bicycle","bird","boat","bottle","bus","car"
            "sheep","sofa","train","tvmonitor"]
 PRIVATE = {"person","bicycle","bus","car","motorbike"}
 PADDING = 0.18
+# Fixed scene privacy zones cover the public gravel-bar/vehicle area where the
+# generic detector can miss small distant people or parked vehicles.
+# Coordinates are fractions of source width/height: x1,y1,x2,y2.
+FIXED_PRIVACY_ZONES = [(0.245,0.455,0.375,0.585),(0.475,0.680,0.625,0.825)]
 
 def main():
     ap=argparse.ArgumentParser()
@@ -27,6 +31,14 @@ def main():
     blob=cv2.dnn.blobFromImage(cv2.resize(img,(300,300)),0.007843,(300,300),127.5)
     net.setInput(blob); detections=net.forward()
     hits=[]
+    # Apply deterministic fixed-scene privacy first. This is deliberately
+    # conservative: privacy does not depend on detector confidence.
+    for n,(fx1,fy1,fx2,fy2) in enumerate(FIXED_PRIVACY_ZONES,1):
+        x1,y1,x2,y2=int(fx1*w),int(fy1*h),int(fx2*w),int(fy2*h)
+        roi=img[y1:y2,x1:x2]
+        k=max(31,min(151,(min(roi.shape[:2])//2)|1))
+        img[y1:y2,x1:x2]=cv2.GaussianBlur(roi,(k,k),0)
+        hits.append({"class":"fixed-privacy-zone","confidence":1.0,"box":[x1,y1,x2,y2],"zone":n})
     for i in range(detections.shape[2]):
         conf=float(detections[0,0,i,2]); idx=int(detections[0,0,i,1])
         if conf < a.confidence or idx >= len(CLASSES) or CLASSES[idx] not in PRIVATE: continue
