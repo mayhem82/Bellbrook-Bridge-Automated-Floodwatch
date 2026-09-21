@@ -6,6 +6,10 @@ name: Bellbrook camera capture prototype
 
 on:
   workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/capture-bellbrook-camera.yml'
+      - 'scripts/privacy_blur_camera.py'
 
 permissions:
   contents: read
@@ -73,8 +77,17 @@ jobs:
           test -s bellbrook-private.jpeg
           cat privacy-report.json
 
-      - name: Do not persist camera imagery
+      - name: Publish short-lived validation artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: bellbrook-camera-privacy-validation
+          path: |
+            bellbrook-private.jpeg
+            privacy-report.json
+          retention-days: 1
+          if-no-files-found: error
+
+      - name: Confirm source frame is not persisted
         run: |
-          echo "Validation only: the fetched frame is intentionally not uploaded,"
-          echo "committed, archived, or republished by this workflow."
-          echo "Future persistence is blocked until people and vehicles are blurred."
+          echo "Only the privacy-processed JPEG and detection report are retained for 1 day."
+          echo "The unblurred source JPEG is never uploaded, committed, or published."
