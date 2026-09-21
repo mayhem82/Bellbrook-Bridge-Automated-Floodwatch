@@ -328,11 +328,11 @@
 
   <script>
     const DATA_URL = "https://australiademo.opendatasoft.com/api/explore/v2.1/catalog/datasets/bom-river-heights-data/records?where=station_id%3D%22059122%22&order_by=datetime%20DESC&limit=100";
-    const HISTORY_URL = DATA_URL.replace("/bom-river-heights-data/", "/bom-river-heights-data-historical/");
+    const HISTORY_URL = "https://australiademo.opendatasoft.com/api/explore/v2.1/catalog/datasets/bom-river-heights-data-historical/records?where=station_id%3D%22059122%22%20AND%20datetime%3E%3Dnow(days%3D-14)&order_by=datetime%20DESC&limit=100";
     const DECK = 2.80;
     const WATCH = 2.30;
     const HISTORY_KEY = "bellbrook_history_direct_v2";
-    const APP_BUILD = "2026.09.21.4";
+    const APP_BUILD = "2026.09.21.5";
     const REQUEST_TIMEOUT_MS = 15000;
     const HISTORY_RETENTION_MS = 14 * 24 * 60 * 60 * 1000;
     const RANGE_24H_MS = 24 * 60 * 60 * 1000;
@@ -554,6 +554,18 @@
       setDataAge(time.date);
     }
 
+    async function fetchAllHistory(timeoutMs = REQUEST_TIMEOUT_MS) {
+      const all = [];
+      for (let offset = 0; offset < 1000; offset += 100) {
+        const join = HISTORY_URL.includes("?") ? "&" : "?";
+        const payload = await fetchJSON(HISTORY_URL + join + "offset=" + offset + "&cache=" + Date.now(), timeoutMs);
+        const rows = validObservations(payload);
+        all.push(...rows);
+        if (!payload.results || payload.results.length < 100 || all.length >= (payload.total_count || Infinity)) break;
+      }
+      return { results: all };
+    }
+
     async function fetchJSON(url, timeoutMs = REQUEST_TIMEOUT_MS) {
       const controller = new AbortController();
       let timer;
@@ -594,11 +606,13 @@
       if (!lastObservation) setUnavailable("LOADING GAUGE DATA — UP TO 15 SECONDS");
       document.getElementById("last-checked").textContent = "Floodwatch: checking the source…";
       try {
-        const results = await Promise.allSettled([HISTORY_URL, DATA_URL].map(async url => {
-          const payload = await fetchJSON(url + "&cache=" + Date.now());
-          if (!readObservation(payload)) throw new Error("No valid Bellbrook 059122 observation found.");
-          return payload;
-        }));
+        const results = await Promise.allSettled([
+          fetchAllHistory(),
+          fetchJSON(DATA_URL + "&cache=" + Date.now()).then(payload => {
+            if (!readObservation(payload)) throw new Error("No valid Bellbrook 059122 observation found.");
+            return payload;
+          })
+        ]);
         const feeds = results.filter(result => result.status === "fulfilled");
         if (!feeds.length) throw results[1].reason;
         // Current-feed values take precedence for duplicate observation times.
