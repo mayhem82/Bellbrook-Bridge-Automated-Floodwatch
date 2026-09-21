@@ -357,7 +357,7 @@
     const DECK = 2.80;
     const WATCH = 2.30;
     const HISTORY_KEY = "bellbrook_history_direct_v2";
-    const APP_BUILD = "2026.09.22.15";
+    const APP_BUILD = "2026.09.22.16";
     const REQUEST_TIMEOUT_MS = 15000;
     const HISTORY_RETENTION_MS = 14 * 24 * 60 * 60 * 1000;
     const RANGE_24H_MS = 24 * 60 * 60 * 1000;
@@ -863,7 +863,7 @@
     setInterval(() => update(), 300000);
   
   let timelapseTimer=null, timelapseFrames=[], timelapseIndex=0, timelapsePlaying=false;
-  const TIMELAPSE_FALLBACK_FRAMES=["20260921T065843Z.jpg","20260921T072618Z.jpg","20260921T133659Z.jpg","20260921T185832Z.jpg","20260921T194335Z.jpg","20260921T194739Z.jpg","20260921T200650Z.jpg","20260921T201500Z.jpg","20260921T203108Z.jpg","20260921T203355Z.jpg"];
+  const TIMELAPSE_FALLBACK_FRAMES=["20260921T065843Z.jpg","20260921T072618Z.jpg","20260921T133659Z.jpg","20260921T185832Z.jpg","20260921T194335Z.jpg","20260921T194739Z.jpg","20260921T200650Z.jpg","20260921T201500Z.jpg","20260921T203108Z.jpg","20260921T203355Z.jpg","20260921T210201Z.jpg","20260921T213934Z.jpg"];
   let timelapseFrameMs=180;
   async function loadTimelapse(){
     const status=document.getElementById("timelapse-status");
