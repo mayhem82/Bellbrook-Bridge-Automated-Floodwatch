@@ -790,19 +790,24 @@
   async function loadTimelapse(){
     const status=document.getElementById("timelapse-status");
     try{
-      const manifestUrl=new URL("camera/manifest.json",location.href);
-      manifestUrl.searchParams.set("v",String(Date.now()));
-      const r=await fetch(manifestUrl.href,{cache:"reload",headers:{"Cache-Control":"no-cache"}});
+      const r=await fetch("camera/manifest.json?v="+Date.now(),{cache:"no-store"});
       if(!r.ok) throw new Error("manifest "+r.status);
-      const m=await r.json(); const manifestFrames=Array.isArray(m.frames)?m.frames:[]; timelapseFrames=[...new Set([...manifestFrames,...TIMELAPSE_FALLBACK_FRAMES])].sort();
-      status.textContent=timelapseFrames.length===1?"1 retained frame — time-lapse capture has started.":timelapseFrames.length+" retained frames available."; renderTimelapseGallery();
+      const m=await r.json();
+      const manifestFrames=Array.isArray(m.frames)?m.frames:[];
+      if(manifestFrames.length){
+        timelapseFrames=[...new Set([...timelapseFrames,...manifestFrames,...TIMELAPSE_FALLBACK_FRAMES])].sort();
+      }else if(!timelapseFrames.length){
+        timelapseFrames=TIMELAPSE_FALLBACK_FRAMES.slice();
+      }
+      status.textContent=timelapseFrames.length+" retained frames available.";
+      renderTimelapseGallery();
     }catch(e){
-      status.textContent="Archive inventory could not refresh — retrying…";
-      setTimeout(loadTimelapse,3000);
-      return;
+      if(!timelapseFrames.length) timelapseFrames=TIMELAPSE_FALLBACK_FRAMES.slice();
+      status.textContent=timelapseFrames.length+" retained frames available; archive refresh pending.";
+      renderTimelapseGallery();
     }
   }
-  function renderTimelapseGallery(){
+    function renderTimelapseGallery(){
     const gallery=document.getElementById("timelapse-gallery");
     if(!gallery)return;
     gallery.replaceChildren(); const count=document.getElementById("timelapse-count"); if(count)count.textContent="("+timelapseFrames.length+")";
