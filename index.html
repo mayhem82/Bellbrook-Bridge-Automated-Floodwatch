@@ -300,6 +300,7 @@
         <span class="label">Bellbrook trend</span>
         <div class="tools" style="grid-template-columns:repeat(2,minmax(0,1fr));margin:10px 0 14px"><button id="trend-24h" class="btn light" type="button">24 hours</button><button id="trend-14d" class="btn secondary" type="button">14 days</button></div>
         <canvas id="floodChart"></canvas>
+        <p id="trend-point-detail" class="small-note" aria-live="polite"><strong>Tap a point</strong> to see its exact water height and observation time.</p>
         <p id="trend-note" class="small-note">Trend is rebuilt from the captured Bellbrook observation table each refresh, so it does not depend on when this app was opened.</p>
       </div>
 
@@ -526,6 +527,28 @@
       ctx.fillText(String(visible[0].time || ""), pad.l, height-8);
       ctx.textAlign="right"; ctx.fillText(String(last.time || ""), width-pad.r, height-8); ctx.textAlign="left";
     }
+
+    function selectTrendPoint(clientX, clientY) {
+      if (!chart || !currentHistory.length) return;
+      const rect=chart.getBoundingClientRect();
+      const width=Math.max(280,Math.round(rect.width||chart.parentElement.clientWidth||600));
+      const height=310, pad={l:42,r:14,t:14,b:30}, plotW=width-pad.l-pad.r, plotH=height-pad.t-pad.b;
+      const endStamp=currentHistory[currentHistory.length-1].stamp;
+      const visible=currentHistory.filter(h=>h.stamp>=endStamp-trendRangeMs);
+      if(!visible.length)return;
+      const maxY=Math.max(3.4,...currentHistory.map(h=>h.height+0.3));
+      const span=visible[visible.length-1].stamp-visible[0].stamp;
+      const x=i=>span===0?pad.l+plotW/2:pad.l+((visible[i].stamp-visible[0].stamp)/span)*plotW;
+      const y=v=>pad.t+plotH-(Math.max(0,Math.min(maxY,v))/maxY)*plotH;
+      const px=(clientX-rect.left)*(width/rect.width), py=(clientY-rect.top)*(height/rect.height);
+      let best=null, bestD=Infinity;
+      visible.forEach((h,i)=>{const dx=x(i)-px,dy=y(Number(h.height))-py,d=dx*dx+dy*dy;if(d<bestD){bestD=d;best={h,i};}});
+      if(!best || bestD>28*28)return;
+      const detail=document.getElementById("trend-point-detail");
+      detail.innerHTML="<strong>"+Number(best.h.height).toFixed(2)+" m</strong> · "+formatObservationTime(best.h.stamp).label+" · observation "+(best.i+1)+" of "+visible.length;
+    }
+
+    chart && chart.addEventListener("pointerup",e=>selectTrendPoint(e.clientX,e.clientY));
 
     function setStatus(height) {
       const banner = document.getElementById("status-banner");
