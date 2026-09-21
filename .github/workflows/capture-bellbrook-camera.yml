@@ -3,7 +3,8 @@ name: Bellbrook camera capture prototype
 on:
   schedule:
     # Capture every 15 minutes. A new archive frame is written only when the upstream JPEG changes.
-    - cron: '7,22,37,52 * * * *'
+    - cron: '3,18,33,48 * * * *'
+    - cron: '11,26,41,56 * * * *'
   workflow_dispatch:
   push:
     paths:
