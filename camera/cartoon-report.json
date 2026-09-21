@@ -1,0 +1,7 @@
+{
+  "mode": "cartoon-only",
+  "cartoon_levels": 6,
+  "edge_thickness_x": 1,
+  "edge_strength_percent": 70,
+  "saturation_percent": 135
+}
