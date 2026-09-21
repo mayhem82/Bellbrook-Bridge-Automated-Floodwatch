@@ -306,7 +306,7 @@
       <div class="card chart-card">
         <span class="label">Bellbrook camera time-lapse</span>
         <img id="cameraLatest" src="camera/latest.jpg" alt="Cartoon Mode Bellbrook Bridge camera frame" style="width:100%;display:block;border-radius:18px;margin-top:10px">
-        <p class="small-note"><strong>Capture active:</strong> Floodwatch retains one Cartoon Mode frame every 30 minutes. Locked rendering: 1× edge thickness, 70% edge strength. Use the controls below to replay every retained frame.</p>
+        <p class="small-note"><strong>Capture active:</strong> Floodwatch retains up to 7 days of captured frames. Locked rendering: 1× edge thickness, 70% edge strength. Every retained frame is shown below and included in time-lapse playback.</p><div id="timelapse-gallery" style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-top:10px"></div>
         <div class="tools" style="grid-template-columns:repeat(2,minmax(0,1fr));margin-top:10px">
           <button id="timelapse-play" class="btn secondary" type="button">Play time-lapse</button>
           <button id="timelapse-stop" class="btn light" type="button">Stop</button>
@@ -789,8 +789,29 @@
       const r=await fetch("camera/manifest.json?ts="+Date.now(),{cache:"no-store"});
       if(!r.ok) throw new Error("manifest "+r.status);
       const m=await r.json(); timelapseFrames=Array.isArray(m.frames)?m.frames:[];
-      status.textContent=timelapseFrames.length===1?"1 retained frame — time-lapse capture has started.":timelapseFrames.length+" retained frames available.";
+      status.textContent=timelapseFrames.length===1?"1 retained frame — time-lapse capture has started.":timelapseFrames.length+" retained frames available."; renderTimelapseGallery();
     }catch(e){ status.textContent="Camera history unavailable: "+e.message; }
+  }
+  function renderTimelapseGallery(){
+    const gallery=document.getElementById("timelapse-gallery");
+    if(!gallery)return;
+    gallery.replaceChildren();
+    timelapseFrames.forEach((name,i)=>{
+      const item=document.createElement("button");
+      item.type="button";
+      item.style.cssText="border:0;padding:0;background:transparent;text-align:left;color:inherit;cursor:pointer";
+      const img=document.createElement("img");
+      img.src="camera/frames/"+name;
+      img.alt="Captured Bellbrook Bridge frame "+(i+1);
+      img.loading="lazy";
+      img.style.cssText="width:100%;display:block;border-radius:8px;aspect-ratio:16/9;object-fit:cover";
+      const label=document.createElement("span");
+      label.textContent=frameLabel(name);
+      label.style.cssText="display:block;font-size:10px;margin-top:2px";
+      item.append(img,label);
+      item.addEventListener("click",()=>{ document.getElementById("cameraLatest").src=img.src; document.getElementById("timelapse-status").textContent="Viewing frame "+(i+1)+" of "+timelapseFrames.length+" • "+frameLabel(name); });
+      gallery.appendChild(item);
+    });
   }
   function frameLabel(name){
     const m=name.match(/^(\\d{4})(\\d{2})(\\d{2})T(\\d{2})(\\d{2})(\\d{2})Z/);
