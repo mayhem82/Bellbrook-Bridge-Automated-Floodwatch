@@ -29,7 +29,7 @@ jobs:
           req=urllib.request.Request(url,headers={"User-Agent":"Bellbrook-Floodwatch/1.0"})
           with urllib.request.urlopen(req,timeout=20) as r: page=r.read().decode("utf-8","replace")
           rows=re.findall(r"<tr\\b[^>]*>(.*?)</tr>",page,re.I|re.S)
-          print("BOM_ROWS",len(rows))
+          print("BOM_BYTES",len(page),"BOM_ROWS",len(rows),"START",repr(page[:1200]))
           for row in rows[:40]:
               cells=[re.sub(r"\\s+"," ",unescape(re.sub(r"<[^>]+>"," ",c))).strip() for c in re.findall(r"<t[dh]\\b[^>]*>(.*?)</t[dh]>",row,re.I|re.S)]
               if cells: print("BOM_ROW",repr(cells))
