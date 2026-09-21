@@ -58,13 +58,13 @@ test('startup rebuilds captured history before any on-device polling', async () 
   await p.run('update()');
   assert.equal(p.el('water-level').textContent, '0.80 m');
   assert.equal(p.el('clearance').textContent, '2.00 m');
-  assert.equal(p.history().length, 3);
-  assert.equal(p.history()[0].height, 1.2);
-  assert.match(p.el('trend-note').textContent, /3 captured observations over 12.0 hours/);
+  assert.equal(p.history().length, 4);
+  assert.equal(p.history()[0].height, 1.3);
+  assert.match(p.el('trend-note').textContent, /4 actual captured observations in the selected 14 days/);
   assert.match(p.el('time').textContent, /AEST/);
   assert.equal(p.el('refresh-gauge').disabled, false);
   assert.equal(p.timers.size, 0);
-  assert.equal(p.calls.length, 2, 'refreshes do not overlap');
+  assert.equal(p.calls.length, 3, 'refreshes do not overlap');
 });
 
 test('hung fetch exits loading at 15 seconds, aborts both feeds and Retry recovers', async () => {
@@ -129,7 +129,7 @@ test('history feed is a labelled fallback when current feed fails', async () => 
   const p = page({ fetcher: async url => { if (!url.includes('-historical/')) throw Error('offline'); return response([row(0.7), row(0.8, 9)]); } });
   await p.run('update()');
   assert.equal(p.el('water-level').textContent, '0.70 m');
-  assert.match(p.el('last-checked').textContent, /current feed unavailable; captured observations shown/);
+  assert.match(p.el('last-checked').textContent, /historical mirror/);
 });
 
 test('blocked storage or canvas does not prevent successful gauge loading', async () => {
@@ -178,7 +178,7 @@ function worker({ fetcher = async () => new Response('network'), keys = [] } = {
 }
 
 test('service worker cleans only its own old caches and precaches a usable shell', async () => {
-  const w = worker({ keys: ['bellbrook-floodwatch-v2', 'another-app-cache', 'bellbrook-floodwatch-v4-2026.09.21.3'] });
+  const w = worker({ keys: ['bellbrook-floodwatch-v2', 'another-app-cache', 'bellbrook-floodwatch-v4-2026.09.21.6'] });
   let done; w.events.install({ waitUntil: p => done = p }); await done;
   assert.equal(w.writes.length, 6);
   w.events.activate({ waitUntil: p => done = p }); await done;
@@ -193,4 +193,14 @@ test('service worker bounds a stalled navigation and restores cached shell for u
   let intercepted = false;
   w.events.fetch({ request: { url: 'https://australiademo.opendatasoft.com/data', method: 'GET' }, respondWith: () => intercepted = true });
   assert.equal(intercepted, false, 'never caches live gauge requests');
+});
+
+
+test('trend defaults to 14 days and can select 24 hours', async () => {
+  const p = page({ fetcher: async url => response(url.includes('-historical/') ? [row(0.8), row(0.9, 12), row(1.0, 48)] : [row(0.8)]) });
+  await p.run('update()');
+  assert.match(p.el('trend-note').textContent, /selected 14 days/);
+  p.el('trend-24h').events.click();
+  assert.match(p.el('trend-note').textContent, /selected 24 hours/);
+  assert.doesNotMatch(p.el('trend-note').textContent, /12-hour/);
 });
