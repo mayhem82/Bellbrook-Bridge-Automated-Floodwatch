@@ -1,7 +1,404 @@
 [
   {
     "station_id": "059122",
+    "height": 0.43,
+    "datetime": "2026-09-14T16:06:00+10:00",
+    "source": "BOM official table"
+  },
+  {
+    "station_id": "059122",
+    "height": 0.43,
+    "datetime": "2026-09-14T19:06:00+10:00",
+    "source": "BOM official table"
+  },
+  {
+    "station_id": "059122",
+    "height": 0.44,
+    "datetime": "2026-09-14T22:06:00+10:00",
+    "source": "BOM official table"
+  },
+  {
+    "station_id": "059122",
+    "height": 0.43,
+    "datetime": "2026-09-15T01:06:00+10:00",
+    "source": "BOM official table"
+  },
+  {
+    "station_id": "059122",
+    "height": 0.43,
+    "datetime": "2026-09-15T04:06:00+10:00",
+    "source": "BOM official table"
+  },
+  {
+    "station_id": "059122",
+    "height": 0.44,
+    "datetime": "2026-09-15T07:06:00+10:00",
+    "source": "BOM official table"
+  },
+  {
+    "station_id": "059122",
+    "height": 0.44,
+    "datetime": "2026-09-15T07:08:00+10:00",
+    "source": "BOM official table"
+  },
+  {
+    "station_id": "059122",
+    "height": 0.44,
+    "datetime": "2026-09-15T07:10:00+10:00",
+    "source": "BOM official table"
+  },
+  {
+    "station_id": "059122",
+    "height": 0.43,
+    "datetime": "2026-09-15T10:06:00+10:00",
+    "source": "BOM official table"
+  },
+  {
+    "station_id": "059122",
+    "height": 0.43,
+    "datetime": "2026-09-15T13:06:00+10:00",
+    "source": "BOM official table"
+  },
+  {
+    "station_id": "059122",
+    "height": 0.42,
+    "datetime": "2026-09-15T14:51:00+10:00",
+    "source": "BOM official table"
+  },
+  {
+    "station_id": "059122",
+    "height": 0.42,
+    "datetime": "2026-09-15T14:56:00+10:00",
+    "source": "BOM official table"
+  },
+  {
+    "station_id": "059122",
+    "height": 0.42,
+    "datetime": "2026-09-15T14:58:00+10:00",
+    "source": "BOM official table"
+  },
+  {
+    "station_id": "059122",
+    "height": 0.43,
+    "datetime": "2026-09-15T16:06:00+10:00",
+    "source": "BOM official table"
+  },
+  {
+    "station_id": "059122",
+    "height": 0.43,
+    "datetime": "2026-09-15T19:06:00+10:00",
+    "source": "BOM official table"
+  },
+  {
+    "station_id": "059122",
+    "height": 0.43,
+    "datetime": "2026-09-15T19:07:00+10:00",
+    "source": "BOM official table"
+  },
+  {
+    "station_id": "059122",
+    "height": 0.43,
+    "datetime": "2026-09-15T22:06:00+10:00",
+    "source": "BOM official table"
+  },
+  {
+    "station_id": "059122",
+    "height": 0.43,
+    "datetime": "2026-09-16T01:06:00+10:00",
+    "source": "BOM official table"
+  },
+  {
+    "station_id": "059122",
+    "height": 0.43,
+    "datetime": "2026-09-16T04:06:00+10:00",
+    "source": "BOM official table"
+  },
+  {
+    "station_id": "059122",
+    "height": 0.43,
+    "datetime": "2026-09-16T07:06:00+10:00",
+    "source": "BOM official table"
+  },
+  {
+    "station_id": "059122",
+    "height": 0.42,
+    "datetime": "2026-09-16T10:06:00+10:00",
+    "source": "BOM official table"
+  },
+  {
+    "station_id": "059122",
+    "height": 0.42,
+    "datetime": "2026-09-16T10:07:00+10:00",
+    "source": "BOM official table"
+  },
+  {
+    "station_id": "059122",
+    "height": 0.42,
+    "datetime": "2026-09-16T13:06:00+10:00",
+    "source": "BOM official table"
+  },
+  {
+    "station_id": "059122",
+    "height": 0.42,
+    "datetime": "2026-09-16T16:06:00+10:00",
+    "source": "BOM official table"
+  },
+  {
+    "station_id": "059122",
+    "height": 0.42,
+    "datetime": "2026-09-16T19:06:00+10:00",
+    "source": "BOM official table"
+  },
+  {
+    "station_id": "059122",
+    "height": 0.42,
+    "datetime": "2026-09-17T01:06:00+10:00",
+    "source": "BOM official table"
+  },
+  {
+    "station_id": "059122",
+    "height": 0.42,
+    "datetime": "2026-09-17T04:06:00+10:00",
+    "source": "BOM official table"
+  },
+  {
+    "station_id": "059122",
+    "height": 0.42,
+    "datetime": "2026-09-17T07:06:00+10:00",
+    "source": "BOM official table"
+  },
+  {
+    "station_id": "059122",
+    "height": 0.42,
+    "datetime": "2026-09-17T10:06:00+10:00",
+    "source": "BOM official table"
+  },
+  {
+    "station_id": "059122",
+    "height": 0.42,
+    "datetime": "2026-09-17T13:06:00+10:00",
+    "source": "BOM official table"
+  },
+  {
+    "station_id": "059122",
+    "height": 0.41,
+    "datetime": "2026-09-17T14:52:00+10:00",
+    "source": "BOM official table"
+  },
+  {
+    "station_id": "059122",
+    "height": 0.41,
+    "datetime": "2026-09-17T16:06:00+10:00",
+    "source": "BOM official table"
+  },
+  {
+    "station_id": "059122",
+    "height": 0.41,
+    "datetime": "2026-09-17T19:06:00+10:00",
+    "source": "BOM official table"
+  },
+  {
+    "station_id": "059122",
+    "height": 0.41,
+    "datetime": "2026-09-17T19:07:00+10:00",
+    "source": "BOM official table"
+  },
+  {
+    "station_id": "059122",
+    "height": 0.42,
+    "datetime": "2026-09-17T21:12:00+10:00",
+    "source": "BOM official table"
+  },
+  {
+    "station_id": "059122",
+    "height": 0.42,
+    "datetime": "2026-09-18T01:07:00+10:00",
+    "source": "BOM official table"
+  },
+  {
+    "station_id": "059122",
+    "height": 0.41,
+    "datetime": "2026-09-18T04:07:00+10:00",
+    "source": "BOM official table"
+  },
+  {
+    "station_id": "059122",
+    "height": 0.41,
+    "datetime": "2026-09-18T07:07:00+10:00",
+    "source": "BOM official table"
+  },
+  {
+    "station_id": "059122",
+    "height": 0.41,
+    "datetime": "2026-09-18T10:07:00+10:00",
+    "source": "BOM official table"
+  },
+  {
+    "station_id": "059122",
+    "height": 0.41,
+    "datetime": "2026-09-18T13:07:00+10:00",
+    "source": "BOM official table"
+  },
+  {
+    "station_id": "059122",
+    "height": 0.4,
+    "datetime": "2026-09-18T14:00:00+10:00",
+    "source": "BOM official table"
+  },
+  {
+    "station_id": "059122",
+    "height": 0.4,
+    "datetime": "2026-09-18T16:07:00+10:00",
+    "source": "BOM official table"
+  },
+  {
+    "station_id": "059122",
+    "height": 0.41,
+    "datetime": "2026-09-18T19:07:00+10:00",
+    "source": "BOM official table"
+  },
+  {
+    "station_id": "059122",
+    "height": 0.41,
+    "datetime": "2026-09-18T22:07:00+10:00",
+    "source": "BOM official table"
+  },
+  {
+    "station_id": "059122",
+    "height": 0.41,
+    "datetime": "2026-09-19T01:07:00+10:00",
+    "source": "BOM official table"
+  },
+  {
+    "station_id": "059122",
+    "height": 0.41,
+    "datetime": "2026-09-19T04:07:00+10:00",
+    "source": "BOM official table"
+  },
+  {
+    "station_id": "059122",
+    "height": 0.41,
+    "datetime": "2026-09-19T07:07:00+10:00",
+    "source": "BOM official table"
+  },
+  {
+    "station_id": "059122",
+    "height": 0.4,
+    "datetime": "2026-09-19T13:07:00+10:00",
+    "source": "BOM official table"
+  },
+  {
+    "station_id": "059122",
+    "height": 0.39,
+    "datetime": "2026-09-19T13:57:00+10:00",
+    "source": "BOM official table"
+  },
+  {
+    "station_id": "059122",
+    "height": 0.39,
+    "datetime": "2026-09-19T16:07:00+10:00",
+    "source": "BOM official table"
+  },
+  {
+    "station_id": "059122",
+    "height": 0.4,
+    "datetime": "2026-09-19T19:07:00+10:00",
+    "source": "BOM official table"
+  },
+  {
+    "station_id": "059122",
+    "height": 0.4,
+    "datetime": "2026-09-19T22:07:00+10:00",
+    "source": "BOM official table"
+  },
+  {
+    "station_id": "059122",
+    "height": 0.4,
+    "datetime": "2026-09-20T01:07:00+10:00",
+    "source": "BOM official table"
+  },
+  {
+    "station_id": "059122",
+    "height": 0.4,
+    "datetime": "2026-09-20T04:07:00+10:00",
+    "source": "BOM official table"
+  },
+  {
+    "station_id": "059122",
+    "height": 0.4,
+    "datetime": "2026-09-20T07:07:00+10:00",
+    "source": "BOM official table"
+  },
+  {
+    "station_id": "059122",
+    "height": 0.39,
+    "datetime": "2026-09-20T10:07:00+10:00",
+    "source": "BOM official table"
+  },
+  {
+    "station_id": "059122",
+    "height": 0.38,
+    "datetime": "2026-09-20T13:07:00+10:00",
+    "source": "BOM official table"
+  },
+  {
+    "station_id": "059122",
+    "height": 0.38,
+    "datetime": "2026-09-20T16:07:00+10:00",
+    "source": "BOM official table"
+  },
+  {
+    "station_id": "059122",
+    "height": 0.39,
+    "datetime": "2026-09-20T18:16:00+10:00",
+    "source": "BOM official table"
+  },
+  {
+    "station_id": "059122",
+    "height": 0.39,
+    "datetime": "2026-09-20T19:07:00+10:00",
+    "source": "BOM official table"
+  },
+  {
+    "station_id": "059122",
+    "height": 0.39,
+    "datetime": "2026-09-20T19:08:00+10:00",
+    "source": "BOM official table"
+  },
+  {
+    "station_id": "059122",
+    "height": 0.39,
+    "datetime": "2026-09-20T22:07:00+10:00",
+    "source": "BOM official table"
+  },
+  {
+    "station_id": "059122",
+    "height": 0.39,
+    "datetime": "2026-09-21T01:07:00+10:00",
+    "source": "BOM official table"
+  },
+  {
+    "station_id": "059122",
+    "height": 0.39,
+    "datetime": "2026-09-21T04:07:00+10:00",
+    "source": "BOM official table"
+  },
+  {
+    "station_id": "059122",
+    "height": 0.38,
+    "datetime": "2026-09-21T10:07:00+10:00",
+    "source": "BOM official table"
+  },
+  {
+    "station_id": "059122",
     "height": 0.37,
-    "datetime": "2026-09-21T03:07:00+00:00"
+    "datetime": "2026-09-21T03:07:00+00:00",
+    "source": "OpenDataSoft mirror"
+  },
+  {
+    "station_id": "059122",
+    "height": 0.37,
+    "datetime": "2026-09-21T13:07:00+10:00",
+    "source": "BOM official table"
   }
 ]
