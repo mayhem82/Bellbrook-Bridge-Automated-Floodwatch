@@ -781,7 +781,8 @@
     try { initChart(); } catch (error) { console.error("Chart unavailable:", error); }
     setInterval(() => update(), 300000);
   
-  let timelapseTimer=null, timelapseFrames=[], timelapseIndex=0;
+  let timelapseTimer=null, timelapseFrames=[], timelapseIndex=0, timelapsePlaying=false;
+  const TIMELAPSE_FRAME_MS=180;
   async function loadTimelapse(){
     const status=document.getElementById("timelapse-status");
     try{
@@ -791,14 +792,31 @@
       status.textContent=timelapseFrames.length===1?"1 retained frame — time-lapse capture has started.":timelapseFrames.length+" retained frames available.";
     }catch(e){ status.textContent="Camera history unavailable: "+e.message; }
   }
-  function showTimelapseFrame(){
-    if(!timelapseFrames.length)return;
-    document.getElementById("cameraLatest").src="camera/frames/"+timelapseFrames[timelapseIndex]+"?v="+Date.now();
-    document.getElementById("timelapse-status").textContent="Frame "+(timelapseIndex+1)+" of "+timelapseFrames.length+" • "+timelapseFrames[timelapseIndex];
-    timelapseIndex=(timelapseIndex+1)%timelapseFrames.length;
+  function frameLabel(name){
+    const m=name.match(/^(\\d{4})(\\d{2})(\\d{2})T(\\d{2})(\\d{2})(\\d{2})Z/);
+    if(!m)return name;
+    return new Date(Date.UTC(+m[1],+m[2]-1,+m[3],+m[4],+m[5],+m[6])).toLocaleString("en-AU",{timeZone:"Australia/Sydney",day:"numeric",month:"short",hour:"numeric",minute:"2-digit"});
   }
-  document.getElementById("timelapse-play").addEventListener("click",()=>{ clearInterval(timelapseTimer); timelapseIndex=0; showTimelapseFrame(); timelapseTimer=setInterval(showTimelapseFrame,500); });
-  document.getElementById("timelapse-stop").addEventListener("click",()=>{ clearInterval(timelapseTimer); timelapseTimer=null; document.getElementById("cameraLatest").src="camera/latest.jpg?v="+Date.now(); loadTimelapse(); });
+  function showTimelapseFrame(){
+    if(!timelapsePlaying || !timelapseFrames.length)return;
+    const name=timelapseFrames[timelapseIndex];
+    document.getElementById("cameraLatest").src="camera/frames/"+name;
+    document.getElementById("timelapse-status").textContent="Playing • "+(timelapseIndex+1)+"/"+timelapseFrames.length+" • "+frameLabel(name);
+    timelapseIndex++;
+    if(timelapseIndex>=timelapseFrames.length){
+      clearInterval(timelapseTimer); timelapseTimer=null; timelapsePlaying=false;
+      document.getElementById("timelapse-status").textContent="Time-lapse complete • "+timelapseFrames.length+" frames.";
+      setTimeout(()=>{ if(!timelapsePlaying) document.getElementById("cameraLatest").src="camera/latest.jpg?v="+Date.now(); },700);
+    }
+  }
+  document.getElementById("timelapse-play").addEventListener("click",async()=>{
+    clearInterval(timelapseTimer); timelapseTimer=null; timelapsePlaying=false;
+    await loadTimelapse();
+    if(timelapseFrames.length<2){ document.getElementById("timelapse-status").textContent="Not enough captured frames to play a time-lapse yet."; return; }
+    timelapseIndex=0; timelapsePlaying=true; showTimelapseFrame();
+    timelapseTimer=setInterval(showTimelapseFrame,TIMELAPSE_FRAME_MS);
+  });
+  document.getElementById("timelapse-stop").addEventListener("click",()=>{ clearInterval(timelapseTimer); timelapseTimer=null; timelapsePlaying=false; document.getElementById("cameraLatest").src="camera/latest.jpg?v="+Date.now(); loadTimelapse(); });
   loadTimelapse();
 </script>
 </body>
