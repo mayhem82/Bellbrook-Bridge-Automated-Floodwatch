@@ -119,6 +119,7 @@ test('data age remains beside the timestamp, and older responses never replace n
   assert.match(stale.el('status-banner').textContent, /LOW WATER/);
   assert.doesNotMatch(stale.el('status-banner').textContent, /CHECK BOM|2 HOURS/);
   assert.match(stale.el('data-age').textContent, /3.0 hr/);
+  assert.match(stale.el('last-checked').textContent, /Mirror observation age: about 180 min/);
   const delayed = page({ saved: [{ height: 1.4, stamp: now }], fetcher: async () => response([row(0.8, 1)]) }); await delayed.run('update()');
   assert.equal(delayed.el('water-level').textContent, '1.40 m');
   assert.match(delayed.el('status-banner').textContent, /OLDER READING/);
@@ -177,7 +178,7 @@ function worker({ fetcher = async () => new Response('network'), keys = [] } = {
 }
 
 test('service worker cleans only its own old caches and precaches a usable shell', async () => {
-  const w = worker({ keys: ['bellbrook-floodwatch-v2', 'another-app-cache', 'bellbrook-floodwatch-v4-2026.09.21.2'] });
+  const w = worker({ keys: ['bellbrook-floodwatch-v2', 'another-app-cache', 'bellbrook-floodwatch-v4-2026.09.21.3'] });
   let done; w.events.install({ waitUntil: p => done = p }); await done;
   assert.equal(w.writes.length, 6);
   w.events.activate({ waitUntil: p => done = p }); await done;
