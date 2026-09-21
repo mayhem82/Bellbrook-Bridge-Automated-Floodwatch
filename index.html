@@ -2,13 +2,17 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Bellbrook Bridge Floodwatch</title>
   <meta name="description" content="Bellbrook Bridge live floodwatch dashboard using current river-height observations and bridge-deck clearance calculation." />
   <meta name="theme-color" content="#075b35" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Floodwatch" />
+  <meta name="format-detection" content="telephone=no" />
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" href="icon-192.png" type="image/png" sizes="192x192" />
-  <link rel="apple-touch-icon" href="icon-192.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="icon-192.png" />
   <style>
     :root {
       --deck: 2.80;
@@ -28,6 +32,10 @@
     * { box-sizing: border-box; }
     [hidden] { display: none !important; }
     .btn:disabled { opacity: 0.65; cursor: wait; }
+    button, .btn, a.btn, input[type="range"] { touch-action: manipulation; }
+    button, .btn, a.btn { min-height: 44px; }
+    input, select, textarea { font-size: 16px; }
+    canvas { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
 
     body {
       margin: 0;
@@ -39,7 +47,7 @@
         linear-gradient(180deg, #f5f8fb 0%, #e8f0f6 58%, #d7e6f1 100%);
     }
 
-    .shell { width: min(1040px, 100%); margin: 0 auto; padding: 18px; }
+    .shell { width: min(1040px, 100%); margin: 0 auto; padding: max(18px, env(safe-area-inset-top)) max(18px, env(safe-area-inset-right)) max(18px, env(safe-area-inset-bottom)) max(18px, env(safe-area-inset-left)); }
 
     .hero {
       position: relative;
