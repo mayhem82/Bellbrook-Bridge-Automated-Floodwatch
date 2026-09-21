@@ -263,9 +263,9 @@
             <p id="clearance-note" class="small-note">Distance between current water height and the bridge deck.</p>
           </div>
           <div class="metric">
-            <span class="label">Gauge height</span>
+            <span class="label">Mirrored gauge height</span>
             <div id="water-level" class="value">--.-- m</div>
-            <p class="small-note">Latest river height from feed.</p>
+            <p class="small-note">Latest Bellbrook observation currently available through the mirror.</p>
           </div>
           <div class="metric">
             <span class="label">Relative to deck</span>
@@ -273,7 +273,7 @@
             <p class="small-note">Negative means water is below deck.</p>
           </div>
         </div>
-        <p id="time" class="small-note">Latest gauge observation: waiting...</p>
+        <p id="time" class="small-note">Latest mirrored observation: waiting...</p>
         <p id="data-age" class="small-note">Observation age unavailable.</p>
         <p id="last-checked" class="small-note"><strong>Floodwatch last checked:</strong> waiting...</p>
       </div>
@@ -331,7 +331,7 @@
     const DECK = 2.80;
     const WATCH = 2.30;
     const HISTORY_KEY = "bellbrook_history_direct_v2";
-    const APP_BUILD = "2026.09.21.2";
+    const APP_BUILD = "2026.09.21.3";
     const REQUEST_TIMEOUT_MS = 15000;
     const HISTORY_WINDOW_MS = 12 * 60 * 60 * 1000;
     const AEST_ZONE = "Australia/Brisbane";
@@ -541,7 +541,7 @@
       document.getElementById("clearance").textContent = clearance.toFixed(2) + " m";
       document.getElementById("water-level").textContent = bh.toFixed(2) + " m";
       document.getElementById("deck-relative").textContent = (relative >= 0 ? "+" : "") + relative.toFixed(2) + " m";
-      document.getElementById("time").textContent = "Latest gauge observation: " + time.label;
+      document.getElementById("time").textContent = "Latest mirrored observation: " + time.label;
       document.getElementById("clearance-note").textContent = clearance > 0 ? "Water was below the 2.80 m deck at this observation." : clearance === 0 ? "Water was at the 2.80 m deck at this observation." : "Water was above the 2.80 m deck at this observation.";
       document.getElementById("water-fill").style.height = fillPct + "%";
       document.getElementById("water-callout").style.top = Math.max(8, Math.min(92, 100 - fillPct)) + "%";
@@ -611,7 +611,8 @@
           : results[0].status === "rejected"
             ? " — current feed reached; captured history unavailable."
             : " — current and captured observation feeds reached.";
-        document.getElementById("last-checked").textContent = "Floodwatch last checked: " + formatObservationTime(Date.now()).label + sourceNote;
+        const mirrorAgeMins = Math.max(0, Math.round((Date.now() - latest.stamp) / 60000));
+        document.getElementById("last-checked").textContent = "Floodwatch last checked: " + formatObservationTime(Date.now()).label + sourceNote + " Mirror observation age: about " + mirrorAgeMins + " min.";
         if (latest.stamp > Date.parse(obs.time)) setUnavailable("SOURCE RETURNED AN OLDER READING — LAST READING SHOWN");
         updateChart(currentHistory);
         document.getElementById("trend-note").textContent = currentHistory.length > 1
