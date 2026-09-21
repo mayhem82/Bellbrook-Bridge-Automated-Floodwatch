@@ -357,7 +357,7 @@
     const DECK = 2.80;
     const WATCH = 2.30;
     const HISTORY_KEY = "bellbrook_history_direct_v2";
-    const APP_BUILD = "2026.09.22.13";
+    const APP_BUILD = "2026.09.22.14";
     const REQUEST_TIMEOUT_MS = 15000;
     const HISTORY_RETENTION_MS = 14 * 24 * 60 * 60 * 1000;
     const RANGE_24H_MS = 24 * 60 * 60 * 1000;
@@ -885,8 +885,9 @@
       status.textContent=timelapseFrames.length+" retained frames available.";
       renderTimelapseGallery();
     }catch(e){
+      console.error("Camera archive load failed:",e);
       if(!timelapseFrames.length) timelapseFrames=TIMELAPSE_FALLBACK_FRAMES.slice();
-      status.textContent=timelapseFrames.length+" retained frames available; archive refresh pending.";
+      status.textContent=timelapseFrames.length+" retained frames available; archive load failed: "+(e&&e.message?e.message:"unknown error");
       renderTimelapseGallery();
     }
   }
