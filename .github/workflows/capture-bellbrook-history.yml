@@ -20,12 +20,6 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Inspect official BOM table shape
-        run: |
-          curl --fail --silent --show-error --max-time 20 -A 'Bellbrook-Floodwatch/1.0' \
-            'https://www.bom.gov.au/fwo/IDN60232/IDN60232.059122.tbl.shtml' -o /tmp/bom.html
-          echo "BOM bytes: $(wc -c < /tmp/bom.html)"
-          grep -i '<tr' /tmp/bom.html | head -40 || true
       - name: Capture Bellbrook observations
         run: python scripts/capture_bellbrook_history.py
       - name: Commit new observations
@@ -38,4 +32,5 @@ jobs:
           git config user.email "actions@users.noreply.github.com"
           git add data/bellbrook-history.json
           git commit -m "Capture Bellbrook gauge observations"
+          git pull --rebase
           git push
