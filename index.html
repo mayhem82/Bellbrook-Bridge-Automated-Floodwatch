@@ -786,7 +786,7 @@
   async function loadTimelapse(){
     const status=document.getElementById("timelapse-status");
     try{
-      const r=await fetch("camera/manifest.json?ts="+Date.now(),{cache:"no-store"});
+      const r=await fetch(new URL("camera/manifest.json?ts="+Date.now(),location.href).href,{cache:"no-store"});
       if(!r.ok) throw new Error("manifest "+r.status);
       const m=await r.json(); timelapseFrames=Array.isArray(m.frames)?m.frames:[];
       status.textContent=timelapseFrames.length===1?"1 retained frame — time-lapse capture has started.":timelapseFrames.length+" retained frames available."; renderTimelapseGallery();
@@ -801,7 +801,7 @@
       item.type="button";
       item.style.cssText="border:0;padding:0;background:transparent;text-align:left;color:inherit;cursor:pointer";
       const img=document.createElement("img");
-      img.src="camera/frames/"+name;
+      img.src=new URL("camera/frames/"+name,location.href).href+"?v="+Date.now();
       img.alt="Captured Bellbrook Bridge frame "+(i+1);
       img.loading="lazy";
       img.style.cssText="width:100%;display:block;border-radius:8px;aspect-ratio:16/9;object-fit:cover";
@@ -821,7 +821,7 @@
   function showTimelapseFrame(){
     if(!timelapsePlaying || !timelapseFrames.length)return;
     const name=timelapseFrames[timelapseIndex];
-    document.getElementById("cameraLatest").src="camera/frames/"+name;
+    document.getElementById("cameraLatest").src=new URL("camera/frames/"+name,location.href).href+"?v="+Date.now();
     document.getElementById("timelapse-status").textContent="Playing • "+(timelapseIndex+1)+"/"+timelapseFrames.length+" • "+frameLabel(name);
     timelapseIndex++;
     if(timelapseIndex>=timelapseFrames.length){
