@@ -1,5 +1,5 @@
 const CACHE_PREFIX = "bellbrook-floodwatch-";
-const CACHE = CACHE_PREFIX + "v10-2026.09.22.18";
+const CACHE = CACHE_PREFIX + "v11-2026.09.22.19";
 const CORE = ["./", "./index.html", "./about.html", "./icon-192.png", "./icon-512.png", "./manifest.webmanifest"];
 
 async function fetchWithDeadline(request, timeoutMs = 6000) {
