@@ -1,14 +1,7 @@
-name: Bellbrook camera capture prototype
+name: Bellbrook camera validation
 
 on:
-  schedule:
-    # Capture every 15 minutes. A new archive frame is written only when the upstream JPEG changes.
-    - cron: '3,18,33,48 * * * *'
-    - cron: '11,26,41,56 * * * *'
   workflow_dispatch:
-  workflow_run:
-    workflows: ["Capture Bellbrook gauge history"]
-    types: [completed]
   push:
     paths:
       - '.github/workflows/capture-bellbrook-camera.yml'
@@ -62,7 +55,7 @@ jobs:
           printf '\nHTTP response headers:\n'
           cat headers.txt
 
-      - name: Verify source frame is new
+      - name: Verify source frame
         id: source_frame
         shell: bash
         run: |
@@ -70,12 +63,8 @@ jobs:
           current_sha=$(sha256sum bellbrook-source.jpeg | awk '{print $1}')
           previous_sha=""
           if [ -f camera/source.sha256 ]; then previous_sha=$(cat camera/source.sha256); fi
-          if [ "$current_sha" = "$previous_sha" ]; then
-            echo "changed=false" >> "$GITHUB_OUTPUT"
-          else
-            echo "changed=true" >> "$GITHUB_OUTPUT"
-            echo "$current_sha" > camera/source.sha256
-          fi
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+          echo "$current_sha" > camera/source.sha256
 
       - name: Install Cartoon Mode renderer
         if: steps.source_frame.outputs.changed == 'true'
@@ -111,9 +100,6 @@ jobs:
           frame_path=frames/(stamp+".jpg")
           cv2.imwrite(str(frame_path),img,[cv2.IMWRITE_JPEG_QUALITY,68])
           pathlib.Path(root/"cartoon-report.json").write_text(pathlib.Path("cartoon-report.json").read_text())
-          kept=sorted(frames.glob("*.jpg"))
-          for old in kept[:-672]:
-              old.unlink()
           manifest={"updated_utc":stamp,"frames":[p.name for p in sorted(frames.glob("*.jpg"))]}
           (root/"manifest.json").write_text(json.dumps(manifest,indent=2)+"\\n")
           PY
