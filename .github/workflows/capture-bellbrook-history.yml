@@ -34,7 +34,7 @@ jobs:
             TS=$(date -u +%Y%m%dT%H%M%SZ)
             python -c "import cv2; im=cv2.imread('/tmp/private.jpg'); h,w=im.shape[:2]; out=cv2.resize(im,(640,round(h*640/w)),interpolation=cv2.INTER_AREA); cv2.imwrite('camera/latest.jpg',out,[int(cv2.IMWRITE_JPEG_QUALITY),82]); cv2.imwrite('camera/frames/'+'$TS'+'.jpg',out,[int(cv2.IMWRITE_JPEG_QUALITY),82])"
             echo "$NEW_SHA" > camera/source.sha256
-            python -c "import pathlib,json; fs=sorted(x.name for x in pathlib.Path('camera/frames').glob('*.jpg')); pathlib.Path('camera/manifest.json').write_text(json.dumps({'updated_utc':'$TS','frames':fs},indent=2)+'\\n')"
+            python -c "import pathlib,json; fs=sorted(x.name for x in pathlib.Path('camera/frames').glob('*.jpg')); pathlib.Path('camera/manifest.json').write_text(json.dumps({'updated_utc':'$TS','frames':fs},indent=2)+'\n')"
           fi
       - name: Commit new observations
         run: |
