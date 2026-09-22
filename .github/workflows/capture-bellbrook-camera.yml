@@ -103,7 +103,7 @@ jobs:
           cv2.imwrite(str(frame_path),img,[cv2.IMWRITE_JPEG_QUALITY,68])
           pathlib.Path(root/"cartoon-report.json").write_text(pathlib.Path("cartoon-report.json").read_text())
           manifest={"updated_utc":stamp,"frames":[p.name for p in sorted(frames.glob("*.jpg"))]}
-          (root/"manifest.json").write_text(json.dumps(manifest,indent=2)+"\\n")
+          (root/"manifest.json").write_text(json.dumps(manifest,indent=2)+"\n")
           PY
           git config user.name "bellbrook-floodwatch-bot"
           git config user.email "actions@users.noreply.github.com"
