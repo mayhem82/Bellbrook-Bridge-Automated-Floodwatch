@@ -1,5 +1,5 @@
 const CACHE_PREFIX = "bellbrook-floodwatch-";
-const CACHE = CACHE_PREFIX + "v9-2026.09.22.16";
+const CACHE = CACHE_PREFIX + "v10-2026.09.22.18";
 const CORE = ["./", "./index.html", "./about.html", "./icon-192.png", "./icon-512.png", "./manifest.webmanifest"];
 
 async function fetchWithDeadline(request, timeoutMs = 6000) {
@@ -57,6 +57,8 @@ self.addEventListener("fetch", event => {
   if (url.origin !== scope.origin || !url.pathname.startsWith(scope.pathname)) return;
   const cacheKey = url.origin + url.pathname;
   const isCamera = url.pathname.includes("/camera/");
+  // Camera archive/manifest must come directly from the network; never let the service worker mask them.
+  if (isCamera) return;
   event.respondWith((async () => {
     try {
       const response = await fetchWithDeadline(isCamera ? new Request(event.request, { cache: "no-store" }) : event.request);
