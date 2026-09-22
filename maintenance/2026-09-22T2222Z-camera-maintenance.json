@@ -1,0 +1,56 @@
+{
+  "checked_utc": "2026-09-22T22:21:26.868Z",
+  "checked_aest": "2026-09-23 08:21:26 AEST",
+  "before": {
+    "frame_count": 36,
+    "newest_frame": "20260922T212044Z.jpg",
+    "archive_capture_utc": "2026-09-22T21:20:44Z",
+    "archive_capture_aest": "2026-09-23 07:20:44 AEST",
+    "embedded_camera_aest": "2026-09-23 07:16:57 AEST",
+    "source_sha256": "bd1b3e4aceb714e08c7751bfc83d84bbcac9e52e62882a1eea418d07684c25ae",
+    "repository_public_archive_blob": "d607ca622d22a0351539f4d78c0ae59114d8875a"
+  },
+  "finding": {
+    "status": "capture gap",
+    "evidence": "No capture workflow run was queued or running. Both workflow schedules remained 7,22,37,52 minutes past each hour, but no run was enqueued for 2026-09-22 21:22, 21:37, 21:52 or 22:07 UTC. Repository and public manifests matched, and Pages had completed successfully.",
+    "cause": "GitHub scheduled workflow invocations were not enqueued. Available evidence does not establish GitHub's upstream reason.",
+    "publishing_failure": false
+  },
+  "action": {
+    "method": "Appended one UTC maintenance-trigger comment to .github/workflows/capture-bellbrook-camera.yml using freshly read blob SHA 681f278636dac0059114aa3a435883f7710b5994. Functional workflow content was preserved. The connected GitHub tools did not expose workflow dispatch.",
+    "trigger_commit": "ddc1615acdf8c2e3cca5c166a6a3aab9d10cbb3e",
+    "capture_run_id": 35791962647,
+    "capture_run_url": "https://github.com/mayhem82/Bellbrook-Bridge-Automated-Floodwatch/actions/runs/35791962647",
+    "capture_result": "success",
+    "capture_commit": "46fe280b4aad39f351a67fc5790b1c4cedf5b571",
+    "pages_run_id": 35791992324,
+    "pages_run_url": "https://github.com/mayhem82/Bellbrook-Bridge-Automated-Floodwatch/actions/runs/35791992324",
+    "pages_result": "success"
+  },
+  "after": {
+    "frame_count": 37,
+    "newest_frame": "20260922T222209Z.jpg",
+    "archive_capture_utc": "2026-09-22T22:22:09Z",
+    "archive_capture_aest": "2026-09-23 08:22:09 AEST",
+    "embedded_camera_aest": "2026-09-23 08:20:12 AEST",
+    "source_sha256": "351b8604a8a65596b52550caadd266a04dd1c9d553a0f9727019467b79bae20c",
+    "repository_archive_blob": "a5abd4ec742f3142aa8d1e4ac8942bfb44c47bcd",
+    "public_archive_blob": "a5abd4ec742f3142aa8d1e4ac8942bfb44c47bcd",
+    "public_manifest_matches_repository": true,
+    "public_jpeg_verified": true,
+    "public_url": "https://mayhem82.github.io/Bellbrook-Bridge-Automated-Floodwatch/camera/frames/20260922T222209Z.jpg",
+    "prior_frames_missing": []
+  },
+  "workflow_controls_verified": {
+    "shared_concurrency_group": "bellbrook-capture-publish",
+    "cancel_in_progress": false,
+    "checkout_ref": "main",
+    "camera_workflow_blob_after_trigger": "9a9147edd9dbbc1b94c628f560b1ec30c464f58e",
+    "history_workflow_blob": "7a6f176d31b842cc667ff4889822125f1b655984"
+  },
+  "limitations": [
+    "The repository proves missed enqueue times but does not expose GitHub's upstream scheduler cause.",
+    "The embedded camera timestamp was read from the image overlay and treated as AEST.",
+    "No archived frames were deleted, deduplicated, overwritten, pruned or shortened."
+  ]
+}
