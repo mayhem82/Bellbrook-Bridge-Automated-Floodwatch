@@ -2,7 +2,8 @@ name: Bellbrook camera validation
 
 on:
   schedule:
-    - cron: '*/15 * * * *'
+    # Retain the 15-minute cadence without the busy start-of-hour slot.
+    - cron: '7,22,37,52 * * * *'
   workflow_dispatch:
   push:
     paths:
@@ -13,7 +14,8 @@ permissions:
   contents: write
 
 concurrency:
-  group: bellbrook-camera-capture
+  # Both capture workflows write the same archive and manifest.
+  group: bellbrook-capture-publish
   cancel-in-progress: false
 
 jobs:
@@ -23,6 +25,9 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          # Read the latest archive after waiting for the other writer.
+          ref: main
 
       - name: Fetch and validate Bellbrook Bridge JPEG
         shell: bash
@@ -110,8 +115,8 @@ jobs:
           git add camera/latest.jpg camera/cartoon-report.json camera/manifest.json camera/source.sha256 camera/frames
           if git diff --cached --quiet; then exit 0; fi
           git commit -m "Update Cartoon Mode Bellbrook camera frame"
-          git pull --rebase
-          git push
+          git pull --rebase origin main
+          git push origin HEAD:main
 
 
 # Manual capture trigger: 2026-09-22 14:44 AEST

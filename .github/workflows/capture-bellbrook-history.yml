@@ -1,7 +1,7 @@
 name: Capture Bellbrook gauge history
 on:
   schedule:
-    - cron: "*/15 * * * *"
+    - cron: "7,22,37,52 * * * *"
   workflow_dispatch:
   push:
     paths:
@@ -10,13 +10,16 @@ on:
 permissions:
   contents: write
 concurrency:
-  group: bellbrook-gauge-capture
+  # Share the lock with camera capture because both publish camera/.
+  group: bellbrook-capture-publish
   cancel-in-progress: false
 jobs:
   capture:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: main
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -46,17 +49,8 @@ jobs:
           git config user.email "actions@users.noreply.github.com"
           git add data/bellbrook-history.json camera/
           git commit -m "Capture Bellbrook gauge observations"
-          # Another Floodwatch writer may have advanced main while this job ran.
-          # Retry by rebuilding the commit on the latest main rather than rebasing
-          # generated camera/manifest.json and creating a merge conflict.
-          for attempt in 1 2 3; do
-            if git push; then exit 0; fi
-            echo "Push raced with another Floodwatch update; retry $attempt"
-            git fetch origin main
-            git reset --soft origin/main
-            git add data/bellbrook-history.json camera/
-            git commit --amend --no-edit
-            sleep $((attempt * 2))
-          done
-          echo "Could not publish Floodwatch capture after retries."
-          exit 1
+          # The shared lock and fresh main checkout serialize archive writers.
+          # Rebase unrelated edits; stop on a conflict instead of replacing
+          # another writer's commit or staging deletion of its new frames.
+          git pull --rebase origin main
+          git push origin HEAD:main

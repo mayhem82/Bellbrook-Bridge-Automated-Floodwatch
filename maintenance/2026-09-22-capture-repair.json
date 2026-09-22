@@ -1,0 +1,100 @@
+{
+  "created_utc": "2026-09-22T20:45:41.764419+00:00",
+  "repository": "mayhem82/Bellbrook-Bridge-Automated-Floodwatch",
+  "base_commit": "8ea545b8ea383ae558da74af1bc5d4a987b5d30b",
+  "stage": "PREPARED_FOR_PUBLICATION",
+  "pre_repair": {
+    "archive_frames": 33,
+    "manifest": {
+      "url": "https://mayhem82.github.io/Bellbrook-Bridge-Automated-Floodwatch/camera/manifest.json",
+      "checked_utc": "2026-09-22T20:42:22.091705+00:00",
+      "http_status": 200,
+      "last_modified": "Tue, 22 Sep 2026 19:58:07 GMT",
+      "sha256": "e3e033bf53d06660ad738421f109718ca863a4ff415c92a11be6f0ad66ff1f5a",
+      "frame_count": 33,
+      "newest_frame": "20260922T195728Z.jpg",
+      "updated_utc": "20260922T195728Z"
+    },
+    "source": {
+      "url": "https://public.disasterwatch-iotp.com.au/prospectpublicimages/1662/Bellbrook%20Bridge.jpeg",
+      "checked_utc": "2026-09-22T20:42:26.825130+00:00",
+      "http_status": 200,
+      "last_modified": "Tue, 22 Sep 2026 20:11:53 GMT",
+      "sha256": "30c963d084e5dbf7e2c4e2429e7e506b3e8fa3cce4c2875f59a7ce44b135c786"
+    }
+  },
+  "confirmed_fault": {
+    "run_url": "https://github.com/mayhem82/Bellbrook-Bridge-Automated-Floodwatch/actions/runs/35673648068",
+    "job_id": 106575455981,
+    "log_excerpt": "CONFLICT (content): Merge conflict in camera/manifest.json",
+    "cause": "Camera and gauge jobs wrote camera/ under different concurrency groups. The later gauge retry reset softly to remote main and amended its tip from an older worktree; isolated Git tests reproduced a staged archive deletion and repeated push rejection."
+  },
+  "interventions": [
+    {
+      "change": "Use bellbrook-capture-publish concurrency group for both writers, cancel-in-progress false, and checkout ref main.",
+      "reason": "A queued writer must read the archive committed by the preceding writer."
+    },
+    {
+      "change": "Replace gauge reset/soft/amend retry with normal rebase and non-forced push; explicitly target main in both jobs.",
+      "reason": "Preserve unrelated updates and fail safely if another writer creates a genuine conflict."
+    },
+    {
+      "change": "Set both schedules to 7,22,37,52 * * * *.",
+      "reason": "Keep the 15-minute interval while avoiding the start-of-hour load peak. This is a scheduling mitigation, not proof of exact delivery."
+    }
+  ],
+  "verification": {
+    "old_retry_fault_reproduced": true,
+    "serialized_publication_preserves_all_frames": true,
+    "manifest_contains_all_frames": true,
+    "unrelated_concurrent_edit_preserved": true,
+    "workflow_yaml_and_shell_syntax_valid": true
+  },
+  "preserved": {
+    "baseline_frame_sha256": {
+      "20260921T065843Z.jpg": "2286f8233a879a5aeb565498bc08ae2ec7827808d49f239315dda93315db43eb",
+      "20260921T072618Z.jpg": "c82fdf7045d5e050f47cf96752fee5673b1dec6f1e96b1803c591b56dc0232e2",
+      "20260921T133659Z.jpg": "beb7643c308eb7beda508e7c46e9590e8dc72ef2060f7b0416b177abb739c460",
+      "20260921T185832Z.jpg": "b35c3c3198bb9af15f1a314340d40fceac73cf1ceaf21ab553e5c8efb629552b",
+      "20260921T194335Z.jpg": "a9aa15c34a0a9fe5f68738a154116529bcbeef61a4e00a1ba61252e6223e68d6",
+      "20260921T194739Z.jpg": "a9aa15c34a0a9fe5f68738a154116529bcbeef61a4e00a1ba61252e6223e68d6",
+      "20260921T200650Z.jpg": "a9aa15c34a0a9fe5f68738a154116529bcbeef61a4e00a1ba61252e6223e68d6",
+      "20260921T201500Z.jpg": "19281aa0be156ccc9c6fb2ef9344da8bcb904366315a425550762897d12acd72",
+      "20260921T203108Z.jpg": "19281aa0be156ccc9c6fb2ef9344da8bcb904366315a425550762897d12acd72",
+      "20260921T203355Z.jpg": "19281aa0be156ccc9c6fb2ef9344da8bcb904366315a425550762897d12acd72",
+      "20260921T210201Z.jpg": "f48d73d025db0797b52bc78c778c429e47c831ab28f091d8b0ad66f1968e84a4",
+      "20260921T213934Z.jpg": "3239a66ec161f87031b99e9f399587bf12391c60b3723bcf58c1ec13130eeade",
+      "20260921T220236Z.jpg": "6d1aae22f34b9ce43b28f9df7532e78757ac4f244e968e77d5ae80b841b0a326",
+      "20260921T231401Z.jpg": "29fae2a2e6395205b9f689ffe2679ce6cd306820f62a9d33ec1e76ebb8eb4e62",
+      "20260921T232842Z.jpg": "26991469f29c3ba05b7ad2c1c7fa4142519105e3f72f7d356bba27ab24708299",
+      "20260921T235529Z.jpg": "26991469f29c3ba05b7ad2c1c7fa4142519105e3f72f7d356bba27ab24708299",
+      "20260922T001758Z.jpg": "52ee1245d00a49c5f6a17a16606fe619d90817327ca56ad50879e765a9021ca7",
+      "20260922T001832Z.jpg": "b93cdac6d146fc809c2bfe97a7b2a920ed0e4d0ac85753de12632b719fae6373",
+      "20260922T004142Z.jpg": "f6be648fc6a1cf5c9780aeb437fabf7913df6b0e18842b5f781e593440ae8802",
+      "20260922T004342Z.jpg": "f6be648fc6a1cf5c9780aeb437fabf7913df6b0e18842b5f781e593440ae8802",
+      "20260922T004419Z.jpg": "f6be648fc6a1cf5c9780aeb437fabf7913df6b0e18842b5f781e593440ae8802",
+      "20260922T005148Z.jpg": "f6be648fc6a1cf5c9780aeb437fabf7913df6b0e18842b5f781e593440ae8802",
+      "20260922T013153Z.jpg": "7c2941245b3f05ac2ecfde04539430f8544c37f4f536fabdb0fea23bd0aa0b1e",
+      "20260922T014326Z.jpg": "945be1985ab8b0d78c21d8d698f1ab735718f03ade3328bd1c7662c5016d10a1",
+      "20260922T044510Z.jpg": "252ee906de727138705e0801bd6102378467c7450fedae335c7667f75df1f66a",
+      "20260922T052836Z.jpg": "96b11977f98808dee271cd55ff38dbeec3d1eafae6bcd0889d62d62b6f98a8b2",
+      "20260922T064805Z.jpg": "ac92d07f180b73da4672c7d4230da3ee5b19a8541e1f0156940d28bbe0e0eca8",
+      "20260922T101609Z.jpg": "420f32566ec0fd8848bb6f0ae93cf5864c34d0af9138202f43f6cf919c52f875",
+      "20260922T121143Z.jpg": "d04699637e242cd5e7060c6ae0a47ac628b2a3df4beac7d284f0743b8269fb30",
+      "20260922T150734Z.jpg": "5d2bdb7909efbb8951cd283399c6a4346fa8b83fe5923dba405152ec7834be54",
+      "20260922T165450Z.jpg": "58c67db2b0880419ee54d329b2d7e8a446e44354683e474b76ab12e20f2cc609",
+      "20260922T185617Z.jpg": "6f987d6e83427584efe76d0c0af0951b8efdf678e51f1ef9af87849f549f2f30",
+      "20260922T195728Z.jpg": "d8a83fc74b9961d899a7d122508d68f49e2256ada87776570070e5be9c30fd5b"
+    },
+    "renderer_sha256": "2bb3160798dc3979646f8ec25ac8b93c98eb8a2ec9c1cdd5b8fe123cec1fb75a",
+    "index_sha256": "1ff63d9055b06872a291192781bf91bcf08697a26b2418379103c917987af960",
+    "service_worker_sha256": "f3686d250c8633eb8fd88e74646a6427f74a1a8b6868d3d6d28aa0050ca152ea"
+  },
+  "limitations": [
+    "Root cause of GitHub scheduler delays is unknown; an offset cron does not guarantee runs every 15 minutes.",
+    "No archive files were deleted or deduplicated.",
+    "New public-frame verification must be recorded after the workflow and Pages run."
+  ],
+  "public_site": "https://mayhem82.github.io/Bellbrook-Bridge-Automated-Floodwatch/",
+  "schedule_reference": "https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#schedule"
+}
