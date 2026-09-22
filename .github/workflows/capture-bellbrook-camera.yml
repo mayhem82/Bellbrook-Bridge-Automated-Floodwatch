@@ -112,3 +112,5 @@ jobs:
           git commit -m "Update Cartoon Mode Bellbrook camera frame"
           git pull --rebase
           git push
+
+# Manual capture trigger: 2026-09-22 10:45 AEST
