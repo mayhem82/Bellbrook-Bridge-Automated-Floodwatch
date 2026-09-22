@@ -1,0 +1,14 @@
+{
+  "recorded_utc": "2026-09-22T21:17:42.436500+00:00",
+  "status": "HOURLY_MAINTENANCE_BACKUP_ENABLED",
+  "repository": "mayhem82/Bellbrook-Bridge-Automated-Floodwatch",
+  "task_title": "Maintain Bellbrook camera capture",
+  "schedule": "BEGIN:VEVENT\nDTSTART;TZID=Australia/Sydney:20260923T071900\nRRULE:FREQ=HOURLY;INTERVAL=1\nEND:VEVENT",
+  "timezone": "Australia/Sydney",
+  "is_enabled": true,
+  "slot_resolution": "The user explicitly selected one existing task to pause. Its pause was confirmed, then the Floodwatch backup was created successfully. Other existing tasks were not changed.",
+  "scope": "Audit capture runs, manifest, newest image and Pages. Fill gaps and verify live publication. Preserve every archived frame, Cartoon Mode and working functionality.",
+  "primary_capture": "GitHub Actions retains the 15-minute schedule: 7,22,37,52 * * * *.",
+  "limitation": "Hourly backup is enabled; no claim of a 15-minute ChatGPT schedule or guaranteed exact GitHub scheduler delivery.",
+  "public_site": "https://mayhem82.github.io/Bellbrook-Bridge-Automated-Floodwatch/"
+}

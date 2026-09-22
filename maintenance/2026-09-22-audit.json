@@ -1,0 +1,150 @@
+{
+  "repository": "mayhem82/Bellbrook-Bridge-Automated-Floodwatch",
+  "audit_created_utc": "2026-09-22T05:18:04.070372+00:00",
+  "audited_commit": "a3014607ca1339b379bd789bf578bb65d8458a03",
+  "status": "AUDIT_COMPLETE_RECOVERY_BLOCKED",
+  "public_site": "https://mayhem82.github.io/Bellbrook-Bridge-Automated-Floodwatch/",
+  "verified": {
+    "frames": 25,
+    "manifest_matches_all_repository_frames": true,
+    "newest_capture_utc": "20260922T044510Z",
+    "newest_camera_overlay_aest": "2026-09-22 14:44:13",
+    "source_sha256": "29204b1e9454271dc29bf42e70bd737785cb42c5df5156ae7c0c883afb919f36",
+    "live_archive_sha256": "252ee906de727138705e0801bd6102378467c7450fedae335c7667f75df1f66a",
+    "pages_success_run_id": 35688077610,
+    "last_camera_run_id": 35688056990,
+    "last_camera_event": "push",
+    "last_scheduled_camera_utc": "2026-09-22T00:17:42Z",
+    "last_scheduled_gauge_utc": "2026-09-22T01:43:14Z",
+    "camera_and_gauge_cron": "*/15 * * * *",
+    "cartoon_report": {
+      "mode": "cartoon-only",
+      "profile": "day",
+      "median_luminance": 107.0,
+      "cartoon_levels": 6,
+      "edge_thickness_x": 1,
+      "edge_strength_percent": 70,
+      "saturation_percent": 135
+    }
+  },
+  "findings": [
+    {
+      "classification": "FACT",
+      "text": "The live manifest, newest archived JPEG, latest JPEG and index matched the audited repository. The current camera source hash matched camera/source.sha256."
+    },
+    {
+      "classification": "FACT",
+      "text": "Both workflows are active with 15-minute cron schedules, but the observed scheduled-run history has multi-hour gaps. The latest push-triggered capture and Pages deployment succeeded."
+    },
+    {
+      "classification": "UNKNOWN",
+      "text": "The reason GitHub did not deliver the intervening scheduled runs is not established. GitHub status reported Actions and Pages operational."
+    },
+    {
+      "classification": "FACT",
+      "text": "Gauge run 35673648068 failed at Commit new observations. Full job logs returned HTTP 403 to unauthenticated access."
+    },
+    {
+      "classification": "INFERENCE",
+      "text": "The gauge retry resets softly to origin/main, stages its older worktree and amends that remote tip. This can stage removals of concurrent frames and produce a non-fast-forward commit. No evidence that this retry deleted remote archived frames was obtained. Camera and gauge workflows write the same manifest under different concurrency groups."
+    }
+  ],
+  "interventions": [
+    {
+      "action": "Read public repository, workflow runs, job steps, deployment statuses, camera source, public site and manifest",
+      "result": "Completed; evidence hashes and URLs retained."
+    },
+    {
+      "action": "Read GitHub repository via connected app",
+      "result": "Blocked: HTTP 400 Invalid MCP request metadata."
+    },
+    {
+      "action": "Check native Git write access with push --dry-run",
+      "result": "Blocked: no GitHub credentials; no remote mutation."
+    },
+    {
+      "action": "Inspect saved automations via automations.peek",
+      "result": "Blocked: HTTP 400 Invalid MCP request metadata; no automation created, updated, paused or deleted."
+    }
+  ],
+  "changes": {
+    "remote_commits": 0,
+    "archived_frames_deleted": 0,
+    "archived_frames_deduplicated": 0,
+    "renderer_changed": false,
+    "automations_changed": 0
+  },
+  "recovery_claimed": false,
+  "requested_backup": {
+    "cadence_minutes": 15,
+    "status": "NOT_CREATED",
+    "blocker": "The available ChatGPT automation service permits at most hourly recurrence. Required GitHub app access also failed."
+  },
+  "evidence_urls": [
+    "https://github.com/mayhem82/Bellbrook-Bridge-Automated-Floodwatch/actions/runs/35688056990",
+    "https://github.com/mayhem82/Bellbrook-Bridge-Automated-Floodwatch/actions/runs/35688077610",
+    "https://github.com/mayhem82/Bellbrook-Bridge-Automated-Floodwatch/actions/runs/35673648068",
+    "https://mayhem82.github.io/Bellbrook-Bridge-Automated-Floodwatch/camera/manifest.json",
+    "https://mayhem82.github.io/Bellbrook-Bridge-Automated-Floodwatch/camera/frames/20260922T044510Z.jpg",
+    "https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#schedule"
+  ],
+  "baseline_frame_sha256": {
+    "20260921T065843Z.jpg": "2286f8233a879a5aeb565498bc08ae2ec7827808d49f239315dda93315db43eb",
+    "20260921T072618Z.jpg": "c82fdf7045d5e050f47cf96752fee5673b1dec6f1e96b1803c591b56dc0232e2",
+    "20260921T133659Z.jpg": "beb7643c308eb7beda508e7c46e9590e8dc72ef2060f7b0416b177abb739c460",
+    "20260921T185832Z.jpg": "b35c3c3198bb9af15f1a314340d40fceac73cf1ceaf21ab553e5c8efb629552b",
+    "20260921T194335Z.jpg": "a9aa15c34a0a9fe5f68738a154116529bcbeef61a4e00a1ba61252e6223e68d6",
+    "20260921T194739Z.jpg": "a9aa15c34a0a9fe5f68738a154116529bcbeef61a4e00a1ba61252e6223e68d6",
+    "20260921T200650Z.jpg": "a9aa15c34a0a9fe5f68738a154116529bcbeef61a4e00a1ba61252e6223e68d6",
+    "20260921T201500Z.jpg": "19281aa0be156ccc9c6fb2ef9344da8bcb904366315a425550762897d12acd72",
+    "20260921T203108Z.jpg": "19281aa0be156ccc9c6fb2ef9344da8bcb904366315a425550762897d12acd72",
+    "20260921T203355Z.jpg": "19281aa0be156ccc9c6fb2ef9344da8bcb904366315a425550762897d12acd72",
+    "20260921T210201Z.jpg": "f48d73d025db0797b52bc78c778c429e47c831ab28f091d8b0ad66f1968e84a4",
+    "20260921T213934Z.jpg": "3239a66ec161f87031b99e9f399587bf12391c60b3723bcf58c1ec13130eeade",
+    "20260921T220236Z.jpg": "6d1aae22f34b9ce43b28f9df7532e78757ac4f244e968e77d5ae80b841b0a326",
+    "20260921T231401Z.jpg": "29fae2a2e6395205b9f689ffe2679ce6cd306820f62a9d33ec1e76ebb8eb4e62",
+    "20260921T232842Z.jpg": "26991469f29c3ba05b7ad2c1c7fa4142519105e3f72f7d356bba27ab24708299",
+    "20260921T235529Z.jpg": "26991469f29c3ba05b7ad2c1c7fa4142519105e3f72f7d356bba27ab24708299",
+    "20260922T001758Z.jpg": "52ee1245d00a49c5f6a17a16606fe619d90817327ca56ad50879e765a9021ca7",
+    "20260922T001832Z.jpg": "b93cdac6d146fc809c2bfe97a7b2a920ed0e4d0ac85753de12632b719fae6373",
+    "20260922T004142Z.jpg": "f6be648fc6a1cf5c9780aeb437fabf7913df6b0e18842b5f781e593440ae8802",
+    "20260922T004342Z.jpg": "f6be648fc6a1cf5c9780aeb437fabf7913df6b0e18842b5f781e593440ae8802",
+    "20260922T004419Z.jpg": "f6be648fc6a1cf5c9780aeb437fabf7913df6b0e18842b5f781e593440ae8802",
+    "20260922T005148Z.jpg": "f6be648fc6a1cf5c9780aeb437fabf7913df6b0e18842b5f781e593440ae8802",
+    "20260922T013153Z.jpg": "7c2941245b3f05ac2ecfde04539430f8544c37f4f536fabdb0fea23bd0aa0b1e",
+    "20260922T014326Z.jpg": "945be1985ab8b0d78c21d8d698f1ab735718f03ade3328bd1c7662c5016d10a1",
+    "20260922T044510Z.jpg": "252ee906de727138705e0801bd6102378467c7450fedae335c7667f75df1f66a"
+  },
+  "last_recheck": {
+    "manifest": {
+      "url": "https://mayhem82.github.io/Bellbrook-Bridge-Automated-Floodwatch/camera/manifest.json",
+      "checked_utc": "2026-09-22T05:17:14.227928+00:00",
+      "http_status": 200,
+      "last_modified": "Tue, 22 Sep 2026 04:45:51 GMT",
+      "sha256": "d42b3f8957abc2fd3923b026b09d6126d2ce266892f48461bac37bd4054ef6dd",
+      "frame_count": 25,
+      "newest_frame": "20260922T044510Z.jpg",
+      "updated_utc": "20260922T044510Z"
+    },
+    "camera": {
+      "url": "https://public.disasterwatch-iotp.com.au/prospectpublicimages/1662/Bellbrook%20Bridge.jpeg",
+      "checked_utc": "2026-09-22T05:17:17.437002+00:00",
+      "http_status": 200,
+      "last_modified": "Tue, 22 Sep 2026 04:44:13 GMT",
+      "sha256": "29204b1e9454271dc29bf42e70bd737785cb42c5df5156ae7c0c883afb919f36",
+      "matches_last_archived_source": true
+    },
+    "camera-runs": {
+      "url": "https://api.github.com/repos/mayhem82/Bellbrook-Bridge-Automated-Floodwatch/actions/workflows/363066846/runs?per_page=1",
+      "checked_utc": "2026-09-22T05:17:15.642773+00:00",
+      "http_status": 200,
+      "last_modified": null,
+      "sha256": "76c96d95d52825333233bd20c9bcd2d570c9f6b922ba47017e979c0cd2f875dc",
+      "id": 35688056990,
+      "event": "push",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-09-22T04:44:57Z"
+    }
+  }
+}

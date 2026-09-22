@@ -1,0 +1,90 @@
+{
+  "created_utc": "2026-09-22T20:49:50.062212+00:00",
+  "status": "RECOVERY_VERIFIED_ON_PUBLIC_SITE",
+  "repair_commit": "697c7348300428567a7b65ded1d7631ad9ffe6cc",
+  "capture_commits": [
+    "595ea8d94b144c52f3fdd8a6c613fc7fa5bcf83a",
+    "2a617b608175e3d9822b3a433294daa9f2b81ede"
+  ],
+  "camera_run": {
+    "id": 35782422427,
+    "conclusion": "success"
+  },
+  "gauge_run": {
+    "id": 35782422590,
+    "conclusion": "success",
+    "checkout_commit": "595ea8d94b144c52f3fdd8a6c613fc7fa5bcf83a",
+    "note": "The second writer checked out and preserved the first writer's newly committed frame."
+  },
+  "pages_run": {
+    "id": 35782482872,
+    "conclusion": "success",
+    "commit": "2a617b608175e3d9822b3a433294daa9f2b81ede",
+    "completed_utc": "2026-09-22T20:47:50Z"
+  },
+  "public_verification": {
+    "manifest": {
+      "url": "https://mayhem82.github.io/Bellbrook-Bridge-Automated-Floodwatch/camera/manifest.json",
+      "http_status": 200,
+      "checked_utc": "2026-09-22T20:48:57.909340+00:00",
+      "last_modified": "Tue, 22 Sep 2026 20:47:42 GMT"
+    },
+    "frame_count": 35,
+    "newest_frame": "20260922T204640Z.jpg",
+    "manifest_updated_utc": "20260922T204640Z",
+    "all_previous_frames_listed": true,
+    "camera/frames/20260922T204640Z.jpg": {
+      "http_status": 200,
+      "sha256": "bb4333ce8522aea663ebee8e042a0a86317b42d14d8bfd55e4364979a2900dd7",
+      "matches_current_repository": true
+    },
+    "camera/frames/20260922T204619Z.jpg": {
+      "http_status": 200,
+      "sha256": "502b41929d24cf6196a7f3ca3fbd04027fefffb2f1addf436353ba6b28f6f25f",
+      "matches_current_repository": true
+    },
+    "camera/latest.jpg": {
+      "http_status": 200,
+      "sha256": "bb4333ce8522aea663ebee8e042a0a86317b42d14d8bfd55e4364979a2900dd7",
+      "matches_current_repository": true
+    },
+    "index.html": {
+      "http_status": 200,
+      "sha256": "1ff63d9055b06872a291192781bf91bcf08697a26b2418379103c917987af960",
+      "matches_current_repository": true
+    },
+    "sw.js": {
+      "http_status": 200,
+      "sha256": "f3686d250c8633eb8fd88e74646a6427f74a1a8b6868d3d6d28aa0050ca152ea",
+      "matches_current_repository": true
+    },
+    "previous_archive_bytes_unchanged": true,
+    "renderer_unchanged": true,
+    "verified_utc": "2026-09-22T20:49:06.917152+00:00"
+  },
+  "changes": {
+    "code_changes": "Two workflow files only; archive/publication lock, fresh main checkout, safe push and offset 15-minute cron.",
+    "archive_frames_before": 33,
+    "archive_frames_after": 35,
+    "previous_archive_bytes_unchanged": true,
+    "frames_deleted": 0,
+    "frames_deduplicated": 0,
+    "renderer_changed": false,
+    "app_changed": false
+  },
+  "automation_intervention": {
+    "attempted_action": "Create hourly Floodwatch maintenance backup, following disclosure of the hourly limit.",
+    "result": "REJECTED",
+    "error_code": "too_many_active_automations",
+    "current_active_count": 5,
+    "plan_limit": 5,
+    "task_created": false,
+    "existing_tasks_changed": false,
+    "required_next_action": "User must select an existing task to pause before a slot can be used."
+  },
+  "limits": [
+    "Successful recovery and current public publication are verified. Future exact 15-minute delivery is not yet established.",
+    "GitHub Actions retains the primary 15-minute schedule. ChatGPT backup is not active."
+  ],
+  "public_site": "https://mayhem82.github.io/Bellbrook-Bridge-Automated-Floodwatch/"
+}
