@@ -1,0 +1,77 @@
+{
+  "audit_utc": "2026-09-23T06:26:04Z",
+  "audit_aest": "2026-09-23T16:26:04+10:00",
+  "repository": "mayhem82/Bellbrook-Bridge-Automated-Floodwatch",
+  "repair_baseline": "697c7348300428567a7b65ded1d7631ad9ffe6cc",
+  "status": "recovered_and_live_verified",
+  "trigger_condition": {
+    "newest_archive_age_at_detection_minutes": 62.5,
+    "threshold_minutes": 15,
+    "no_relevant_job_queued_or_running": true
+  },
+  "before": {
+    "frame_count": 47,
+    "newest_frame": "20260923T052034Z.jpg",
+    "archive_capture_utc": "2026-09-23T05:20:34Z",
+    "archive_capture_aest": "2026-09-23T15:20:34+10:00",
+    "embedded_camera_timestamp_aest": "2026-09-23T15:17:03+10:00",
+    "source_sha256": "ed53375bd7ffcf4a6816bf420748a4af56ddd36b86f4a6896d13b853c89c31b4",
+    "newest_archive_git_blob_sha": "c788ffd790e356ccdc5f5c41e571f2bc8e434555",
+    "repository_and_public_manifest_equal": true,
+    "repository_and_public_archive_equal": true
+  },
+  "observed_live_source": {
+    "embedded_camera_timestamp_aest": "2026-09-23T16:20:34+10:00",
+    "sha256": "33c23af0205462ed56231211091c06a097368b1627362405b04cb1bc99f7c22f"
+  },
+  "diagnosis": {
+    "cause": "Expected scheduled captures were not enqueued by GitHub Actions; no queued or running capture job existed.",
+    "evidence": [
+      "Latest scheduled camera run before intervention: 2026-09-23T01:32:11Z (11:32:11 AEST), success, run 35806684379.",
+      "Latest history workflow run before intervention: 2026-09-23T01:33:40Z (11:33:40 AEST), scheduled success, run 35806787035.",
+      "The 15:20 AEST archive was created only by the preceding maintenance-triggered push run 35821990634.",
+      "Repository and public site were synchronized before recovery, so this was a capture gap rather than a Pages-only publishing gap."
+    ]
+  },
+  "controls_verified": {
+    "camera_workflow_path": ".github/workflows/capture-bellbrook-camera.yml",
+    "history_workflow_path": ".github/workflows/capture-bellbrook-history.yml",
+    "shared_concurrency_group": "bellbrook-capture-publish",
+    "cancel_in_progress": false,
+    "checkout_ref": "main",
+    "cartoon_mode_preserved": true,
+    "scheduled_captures_suppressed_when_source_unchanged": false
+  },
+  "action": {
+    "method": "Fresh-SHA update of one UTC maintenance-trigger comment in the existing camera workflow because workflow dispatch was unavailable through the connected GitHub tools.",
+    "workflow_blob_sha_before": "60c229dbd49295592722f6a6ac4073c0b50a5f80",
+    "trigger_commit": "a7fea39a46b2ecbbf2bda21cfb3d77de2ce03b3c",
+    "capture_run_id": 35826573650,
+    "capture_run_url": "https://github.com/mayhem82/Bellbrook-Bridge-Automated-Floodwatch/actions/runs/35826573650",
+    "capture_run_conclusion": "success",
+    "capture_commit": "c25502bdcfa93b4e7440ba0f186de12a5804d896",
+    "pages_run_id": 35826593621,
+    "pages_run_url": "https://github.com/mayhem82/Bellbrook-Bridge-Automated-Floodwatch/actions/runs/35826593621",
+    "pages_run_conclusion": "success"
+  },
+  "after": {
+    "frame_count": 48,
+    "newest_frame": "20260923T062418Z.jpg",
+    "archive_capture_utc": "2026-09-23T06:24:18Z",
+    "archive_capture_aest": "2026-09-23T16:24:18+10:00",
+    "embedded_camera_timestamp_aest": "2026-09-23T16:20:34+10:00",
+    "source_sha256": "33c23af0205462ed56231211091c06a097368b1627362405b04cb1bc99f7c22f",
+    "newest_archive_git_blob_sha": "65c9c3463e51a54de1933dcd5f1713ee031bda88",
+    "newest_archive_sha256": "18b7efdcc038be7c60824b7594085811c578c619f93cf8e86edbb25b7f9f632d",
+    "prior_frame_names_missing": [],
+    "repository_and_public_manifest_equal": true,
+    "repository_and_public_archive_equal": true,
+    "public_jpeg_loaded": true,
+    "public_verification_utc": "2026-09-23T06:26:04Z",
+    "cache_bypass_used": true
+  },
+  "limitations": [
+    "GitHub provides no job log for schedule events that were never enqueued, so the upstream scheduler's internal reason is not observable from repository data.",
+    "The embedded camera timestamp was read from the image overlay; the archive capture timestamp comes from the immutable archive filename and manifest."
+  ]
+}
