@@ -1,9 +1,9 @@
 {
   "mode": "cartoon-only",
-  "profile": "day",
-  "median_luminance": 116.0,
-  "cartoon_levels": 6,
+  "profile": "night",
+  "median_luminance": 84.0,
+  "cartoon_levels": 10,
   "edge_thickness_x": 1,
-  "edge_strength_percent": 70,
+  "edge_strength_percent": 48,
   "saturation_percent": 135
 }
