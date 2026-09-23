@@ -1,0 +1,73 @@
+{
+  "schema_version": 1,
+  "intervention_utc": "2026-09-23T15:23:45Z",
+  "intervention_aest": "2026-09-24T01:23:45+10:00",
+  "repository": "mayhem82/Bellbrook-Bridge-Automated-Floodwatch",
+  "baseline_commit": "697c7348300428567a7b65ded1d7631ad9ffe6cc",
+  "condition": {
+    "newest_archive_before": "camera/frames/20260923T142416Z.jpg",
+    "archive_capture_utc_before": "2026-09-23T14:24:16Z",
+    "archive_capture_aest_before": "2026-09-24T00:24:16+10:00",
+    "observed_utc": "2026-09-23T15:22:25Z",
+    "age_minutes": 58.2,
+    "threshold_minutes": 15,
+    "queued_or_running_relevant_job_before_trigger": false,
+    "repository_public_state_matched_before": true,
+    "frame_count_before": 59
+  },
+  "cause": {
+    "finding": "GitHub Actions did not enqueue the expected 15-minute scheduled captures.",
+    "latest_scheduled_camera_run": {
+      "id": 35858156120,
+      "started_utc": "2026-09-23T12:03:43Z",
+      "started_aest": "2026-09-23T22:03:43+10:00",
+      "conclusion": "success"
+    },
+    "latest_scheduled_history_run": {
+      "id": 35859768039,
+      "started_utc": "2026-09-23T12:19:35Z",
+      "started_aest": "2026-09-23T22:19:35+10:00",
+      "conclusion": "success"
+    },
+    "limitation": "The run history proves missing enqueue events; GitHub does not expose the scheduler's internal root cause here."
+  },
+  "action": {
+    "method": "Appended one UTC maintenance-trigger comment to the current main camera workflow using its freshly read blob SHA, activating the existing path-filtered push trigger.",
+    "trigger_commit": "46c4da254048eee3d930d780b4cf374499187c18",
+    "capture_run_id": 35881237625,
+    "capture_run_url": "https://github.com/mayhem82/Bellbrook-Bridge-Automated-Floodwatch/actions/runs/35881237625",
+    "capture_conclusion": "success",
+    "capture_commit": "7e2d78d301e01098c3bc11cd40ca25c3b416dc4c",
+    "functional_workflow_content_changed": false
+  },
+  "result": {
+    "frame_count_after": 60,
+    "all_59_previous_frame_names_retained": true,
+    "newest_archive_after": "camera/frames/20260923T152400Z.jpg",
+    "archive_capture_utc_after": "2026-09-23T15:24:00Z",
+    "archive_capture_aest_after": "2026-09-24T01:24:00+10:00",
+    "embedded_camera_timestamp_aest": "2026-09-24T00:54:52+10:00",
+    "source_sha256": "8c8da8d0f929cc128185421e157c48338d51eb477568bbc00033dd10a3427fff",
+    "repository_archive_git_blob_sha": "3bea1a27408e75cd877fc82e73b8c95999ae0187",
+    "public_archive_git_blob_sha": "3bea1a27408e75cd877fc82e73b8c95999ae0187",
+    "repository_latest_git_blob_sha": "6bd19dc0f14340e0a0a4170337d865f5754eb95e",
+    "public_latest_git_blob_sha": "6bd19dc0f14340e0a0a4170337d865f5754eb95e",
+    "public_manifest_count": 60,
+    "public_manifest_newest": "20260923T152400Z.jpg",
+    "capture_pages_run_id": 35881269613,
+    "capture_pages_run_url": "https://github.com/mayhem82/Bellbrook-Bridge-Automated-Floodwatch/actions/runs/35881269613",
+    "capture_pages_conclusion": "success",
+    "live_verification_utc": "2026-09-23T15:27:07.262Z",
+    "verified": true
+  },
+  "controls_verified": {
+    "camera_workflow_current_main": true,
+    "history_workflow_current_main": true,
+    "shared_concurrency_group": "bellbrook-capture-publish",
+    "cancel_in_progress": false,
+    "checkout_ref": "main",
+    "unchanged_source_still_archived": true,
+    "cartoon_mode_preserved": true,
+    "archive_deleted_or_overwritten": false
+  }
+}
