@@ -1,0 +1,83 @@
+{
+  "schema_version": 1,
+  "repository": "mayhem82/Bellbrook-Bridge-Automated-Floodwatch",
+  "intervention": {
+    "utc": "2026-09-23T21:20:47Z",
+    "aest": "2026-09-24T07:20:47+10:00",
+    "reason": "Newest archived capture exceeded the 15-minute maintenance threshold and no relevant capture job was running."
+  },
+  "before": {
+    "frame_count": 68,
+    "newest_archive": "camera/frames/20260923T203126Z.jpg",
+    "archive_capture_utc": "2026-09-23T20:31:26Z",
+    "archive_capture_aest": "2026-09-24T06:31:26+10:00",
+    "repository_public_manifest_match": true,
+    "repository_public_latest_match": true,
+    "repository_archive_blob": "a570e006864a47f3168dffd67e196e4c6f267e77",
+    "public_archive_blob": "a570e006864a47f3168dffd67e196e4c6f267e77",
+    "source_sha256_recorded": "8000de21641564c5c453e35101e8b994226cb9f171a6b6eccb55fe6dc62cccde"
+  },
+  "diagnosis": {
+    "cause": "A scheduled history cycle ran at 20:31 UTC, but later 15-minute captures—including the 21:07 UTC cycle—were not enqueued.",
+    "active_relevant_job_found": false,
+    "latest_scheduled_camera_run": {
+      "id": 35912123003,
+      "created_at": "2026-09-23T19:51:42Z",
+      "conclusion": "success",
+      "url": "https://github.com/mayhem82/Bellbrook-Bridge-Automated-Floodwatch/actions/runs/35912123003"
+    },
+    "latest_scheduled_history_run": {
+      "id": 35916493684,
+      "created_at": "2026-09-23T20:31:12Z",
+      "conclusion": "success",
+      "url": "https://github.com/mayhem82/Bellbrook-Bridge-Automated-Floodwatch/actions/runs/35916493684"
+    },
+    "latest_pages_run": {
+      "id": 35916528311,
+      "conclusion": "success",
+      "url": "https://github.com/mayhem82/Bellbrook-Bridge-Automated-Floodwatch/actions/runs/35916528311"
+    },
+    "limitation": "Workflow history shows missing enqueue events but does not expose GitHub's internal scheduler cause."
+  },
+  "action": {
+    "type": "maintenance-trigger-comment",
+    "workflow": ".github/workflows/capture-bellbrook-camera.yml",
+    "workflow_blob_before": "ecfb247f50045b221c040149a22ca7e407cacd2b",
+    "workflow_blob_after": "a7f80e7df78018d034450eebc8b005aa58905aae",
+    "trigger_commit": "af7da001a631b3b9038671ae7bd9e6724266e1e6",
+    "capture_run": 35921855988,
+    "capture_run_url": "https://github.com/mayhem82/Bellbrook-Bridge-Automated-Floodwatch/actions/runs/35921855988",
+    "queued_job_followed": true,
+    "functional_content_changed": false,
+    "note": "Appended one UTC maintenance-trigger comment because workflow dispatch was unavailable through the connected GitHub tools; followed the queued run without starting another."
+  },
+  "after": {
+    "frame_count": 69,
+    "previous_frame_count": 68,
+    "all_previous_archive_names_retained": true,
+    "newest_archive": "camera/frames/20260923T212140Z.jpg",
+    "archive_capture_utc": "2026-09-23T21:21:40Z",
+    "archive_capture_aest": "2026-09-24T07:21:40+10:00",
+    "embedded_camera_timestamp_aest": "2026-09-24T07:13:41+10:00",
+    "capture_commit": "b9e2e104a6b39803a020c3ed4048f5cb0997b379",
+    "source_sha256_recorded": "bb030697f0c409a9e7ed38e62eb24af36a9474301bddb83981313f48c203cfa1",
+    "repository_archive_blob": "11f2ce9b13318e7d994501b8ef309196b4defca8",
+    "public_archive_blob": "11f2ce9b13318e7d994501b8ef309196b4defca8",
+    "repository_latest_blob": "15a62adfd1f9c10f0f511fdc0555474c5d32c3be",
+    "public_latest_blob": "15a62adfd1f9c10f0f511fdc0555474c5d32c3be",
+    "capture_pages_run": 35921946272,
+    "capture_pages_run_url": "https://github.com/mayhem82/Bellbrook-Bridge-Automated-Floodwatch/actions/runs/35921946272",
+    "capture_pages_conclusion": "success",
+    "live_manifest_verified": true,
+    "live_archived_jpeg_verified": true,
+    "repository_public_exact_match": true
+  },
+  "controls_verified": {
+    "cartoon_mode_preserved": true,
+    "shared_concurrency_group": "bellbrook-capture-publish",
+    "cancel_in_progress": false,
+    "checkout_current_main": true,
+    "captures_unchanged_source": true,
+    "archives_deleted_or_overwritten": false
+  }
+}
