@@ -1,12 +1,6 @@
 [
   {
     "station_id": "059122",
-    "height": 0.43,
-    "datetime": "2026-09-16T07:06:00+10:00",
-    "source": "BOM official table"
-  },
-  {
-    "station_id": "059122",
     "height": 0.42,
     "datetime": "2026-09-16T10:06:00+10:00",
     "source": "BOM official table"
@@ -969,6 +963,24 @@
     "station_id": "059122",
     "height": 0.39,
     "datetime": "2026-09-30T04:08:00+10:00",
+    "source": "BOM official table"
+  },
+  {
+    "station_id": "059122",
+    "height": 0.4,
+    "datetime": "2026-09-30T06:01:00+10:00",
+    "source": "BOM official table"
+  },
+  {
+    "station_id": "059122",
+    "height": 0.4,
+    "datetime": "2026-09-29T21:08:00+00:00",
+    "source": "OpenDataSoft mirror"
+  },
+  {
+    "station_id": "059122",
+    "height": 0.4,
+    "datetime": "2026-09-30T07:08:00+10:00",
     "source": "BOM official table"
   },
   {
