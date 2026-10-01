@@ -1,5 +1,5 @@
 const CACHE_PREFIX = "bellbrook-floodwatch-";
-const CACHE = CACHE_PREFIX + "v11-2026.09.22.19";
+const CACHE = CACHE_PREFIX + "v12-2026.10.01.1";
 const CORE = ["./", "./index.html", "./about.html", "./icon-192.png", "./icon-512.png", "./manifest.webmanifest"];
 
 async function fetchWithDeadline(request, timeoutMs = 6000) {
@@ -55,6 +55,13 @@ self.addEventListener("fetch", event => {
   const scope = new URL(self.registration.scope);
   // Gauge requests use the page's own deadline and are never cached as live data.
   if (url.origin !== scope.origin || !url.pathname.startsWith(scope.pathname)) return;
+
+  // The Upper Macleay monitoring evidence site is a separate standalone object
+  // in this repository. Never intercept, cache, substitute or provide Floodwatch
+  // offline responses for any resource beneath its directory.
+  const evidencePath = scope.pathname + "upper-macleay-monitoring/";
+  if (url.pathname.startsWith(evidencePath)) return;
+
   const cacheKey = url.origin + url.pathname;
   const isCamera = url.pathname.includes("/camera/");
   // Camera archive/manifest must come directly from the network; never let the service worker mask them.
