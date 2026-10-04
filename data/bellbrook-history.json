@@ -1,24 +1,6 @@
 [
   {
     "station_id": "059122",
-    "height": 0.38,
-    "datetime": "2026-09-20T13:07:00+10:00",
-    "source": "BOM official table"
-  },
-  {
-    "station_id": "059122",
-    "height": 0.38,
-    "datetime": "2026-09-20T16:07:00+10:00",
-    "source": "BOM official table"
-  },
-  {
-    "station_id": "059122",
-    "height": 0.39,
-    "datetime": "2026-09-20T18:16:00+10:00",
-    "source": "BOM official table"
-  },
-  {
-    "station_id": "059122",
     "height": 0.39,
     "datetime": "2026-09-20T19:07:00+10:00",
     "source": "BOM official table"
@@ -1071,6 +1053,24 @@
     "station_id": "059122",
     "height": 0.38,
     "datetime": "2026-10-04T11:09:00+10:00",
+    "source": "BOM official table"
+  },
+  {
+    "station_id": "059122",
+    "height": 0.38,
+    "datetime": "2026-10-04T03:12:00+00:00",
+    "source": "OpenDataSoft mirror"
+  },
+  {
+    "station_id": "059122",
+    "height": 0.37,
+    "datetime": "2026-10-04T14:09:00+10:00",
+    "source": "BOM official table"
+  },
+  {
+    "station_id": "059122",
+    "height": 0.38,
+    "datetime": "2026-10-04T14:12:00+10:00",
     "source": "BOM official table"
   }
 ]
