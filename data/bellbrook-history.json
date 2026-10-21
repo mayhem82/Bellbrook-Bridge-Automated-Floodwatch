@@ -925,6 +925,12 @@
   },
   {
     "station_id": "059122",
+    "height": 0.64,
+    "datetime": "2026-10-21T00:11:00+00:00",
+    "source": "OpenDataSoft mirror"
+  },
+  {
+    "station_id": "059122",
     "height": 0.66,
     "datetime": "2026-10-21T06:11:00+00:00",
     "source": "OpenDataSoft mirror"
