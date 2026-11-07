@@ -119,6 +119,8 @@
     .metric:not(.primary) .value { font-size: clamp(1.55rem, 7vw, 3rem); color: var(--ink); }
 
     .small-note { margin: 9px 0 0; color: var(--muted); font-size: 0.88rem; line-height: 1.45; }
+    .hero .small-note { color: #e7f1f8; }
+    .hero .small-note a { color: #ffffff; text-decoration: underline; }
     .primary .small-note { color: rgba(255,255,255,0.72); }
 
     .gauge-wrap { display: grid; grid-template-columns: 168px 1fr; gap: 16px; align-items: stretch; }
@@ -360,7 +362,7 @@
     const DECK = 2.80;
     const WATCH = 2.30;
     const HISTORY_KEY = "bellbrook_history_direct_v2";
-    const APP_BUILD = "2026.11.08.1";
+    const APP_BUILD = "2026.11.08.2";
     const REQUEST_TIMEOUT_MS = 15000;
     const HISTORY_RETENTION_MS = 14 * 24 * 60 * 60 * 1000;
     const RANGE_24H_MS = 24 * 60 * 60 * 1000;
