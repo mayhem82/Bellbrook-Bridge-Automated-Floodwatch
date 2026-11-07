@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Bellbrook Bridge Floodwatch</title>
-  <meta name="description" content="Bellbrook Bridge live floodwatch dashboard using current river-height observations and bridge-deck clearance calculation." />
+  <meta name="description" content="Independent Bellbrook river observation dashboard with indicative clearance against a published bridge-deck reference." />
   <meta name="theme-color" content="#075b35" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -254,8 +254,9 @@
   <main class="shell">
     <section class="hero" aria-labelledby="page-title">
       <p class="kicker">Bellbrook automated floodwatch</p>
-      <h1 id="page-title">Bridge gauge, clearance, and crossing status.</h1>
-      <p class="hero-sub">Uses a current mirror of Bureau of Meteorology river-height observations for Bellbrook station 059122, compares the latest valid reading against the 2.80 m bridge deck, and refreshes every 5 minutes. Treat this as a local decision aid and verify against official warnings and the live camera during flood conditions.</p>
+      <h1 id="page-title">River observations and indicative deck clearance.</h1>
+      <p class="hero-sub">Independent community tool developed by Julian Minko. Uses available mirrored observations for Bellbrook station 059122 and compares the recorded gauge height with a 2.80 m bridge-deck reference. Checks for available observations every 5 minutes; a refresh does not mean a new observation has arrived.</p>
+      <p class="small-note"><strong>Water-level bands are not crossing status.</strong> Readings and camera images may be delayed or unavailable. They do not establish that the bridge or connecting roads are open or safe. Follow official warnings, closures and directions. Never enter floodwater. <a href="about.html#sources-and-limits">Sources and limitations</a>.</p>
       <div class="status-strip">
         <div id="status-banner" class="status-banner" role="status" aria-live="polite">LOADING GAUGE DATA</div>
         <button id="retry-gauge" class="btn secondary" type="button" hidden>Retry gauge data</button>
@@ -266,9 +267,9 @@
       <div class="card">
         <div class="metric-grid">
           <div class="metric primary">
-            <span class="label">Deck clearance</span>
+            <span class="label">Indicative deck clearance</span>
             <div id="clearance" class="value">--.-- m</div>
-            <p id="clearance-note" class="small-note">Distance between current water height and the bridge deck.</p>
+            <p id="clearance-note" class="small-note">Calculated as 2.80 m reference minus the recorded gauge height; not a direct clearance measurement.</p>
           </div>
           <div class="metric">
             <span class="label">Mirrored gauge height</span>
@@ -278,7 +279,7 @@
           <div class="metric">
             <span class="label">Relative to deck</span>
             <div id="deck-relative" class="value">--.-- m</div>
-            <p class="small-note">Negative means water is below deck.</p>
+            <p class="small-note">Negative means the recorded gauge height is below the 2.80 m reference.</p>
           </div>
         </div>
         <p id="time" class="small-note">Latest mirrored observation: waiting...</p>
@@ -296,10 +297,10 @@
             <div id="water-callout" class="water-callout">Water level<span id="water-callout-value">--.-- m</span></div>
           </div>
           <div class="legend">
-            <div class="risk-item"><span class="dot safe"></span><div><div class="risk-title">LOW WATER</div><div class="risk-copy">Below 1.80 m. More than 1 m below deck.</div></div></div>
-            <div class="risk-item"><span class="dot watch"></span><div><div class="risk-title">WATCH</div><div class="risk-copy">1.80 m to 2.29 m. Water is within 1 m of the deck.</div></div></div>
-            <div class="risk-item"><span class="dot warn"></span><div><div class="risk-title">NEAR DECK</div><div class="risk-copy">2.30 m to 2.79 m. Crossing risk rises quickly.</div></div></div>
-            <div class="risk-item"><span class="dot closed"></span><div><div class="risk-title">DECK CONTACT</div><div class="risk-copy">2.80 m or higher. Water is at deck level.</div></div></div>
+            <div class="risk-item"><span class="dot safe"></span><div><div class="risk-title">LOW WATER</div><div class="risk-copy">Recorded level below 1.80 m; more than 1 m below the deck reference.</div></div></div>
+            <div class="risk-item"><span class="dot watch"></span><div><div class="risk-title">WATCH</div><div class="risk-copy">Recorded level 1.80 m to 2.29 m; within 1 m of the deck reference.</div></div></div>
+            <div class="risk-item"><span class="dot warn"></span><div><div class="risk-title">NEAR DECK</div><div class="risk-copy">Recorded level 2.30 m to 2.79 m; near the deck reference.</div></div></div>
+            <div class="risk-item"><span class="dot closed"></span><div><div class="risk-title">DECK CONTACT</div><div class="risk-copy">Recorded level 2.80 m or higher; at or above the deck reference.</div></div></div>
           </div>
         </div>
       </div>
@@ -314,12 +315,12 @@
 
 
       <div class="card chart-card">
-        <span class="label">Live tools</span>
+        <span class="label">Camera archive and official sources</span>
         <div style="margin:10px 0 14px">
           <button id="timelapse-panel-toggle" class="btn secondary" type="button" aria-expanded="false" style="width:100%">Open camera time-lapse ▾</button>
         <div id="timelapse-panel" hidden style="display:none;margin-top:10px">
         <span class="label">Bellbrook camera time-lapse</span>
-        <img id="cameraLatest" src="camera/latest.jpg" alt="Cartoon Mode Bellbrook Bridge camera frame" style="width:100%;display:block;border-radius:18px;margin-top:10px">
+        <img id="cameraLatest" src="camera/latest.jpg" alt="Cartoon Mode Bellbrook Bridge archived processed camera frame" style="width:100%;display:block;border-radius:18px;margin-top:10px">
         <p class="small-note"><strong>Capture active:</strong> Floodwatch preserves all archived frames. Locked rendering: 1× edge thickness, 70% edge strength.</p><button id="timelapse-gallery-toggle" class="btn light" type="button" aria-expanded="false" style="width:100%;margin-top:10px">Show captured frames <span id="timelapse-count"></span> ▾</button><div id="timelapse-gallery" hidden style="grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-top:8px"></div><label for="timelapse-speed" class="small-note" style="display:block;margin-top:12px"><strong>Time-lapse speed:</strong> <span id="timelapse-speed-label">0.18 sec/frame</span></label><input id="timelapse-speed" type="range" min="100" max="2000" step="50" value="180" style="width:100%;margin:4px 0 8px" aria-label="Time-lapse speed">
         <div class="tools" style="grid-template-columns:repeat(2,minmax(0,1fr));margin-top:10px">
           <button id="timelapse-play" class="btn secondary" type="button">Play time-lapse</button>
@@ -340,13 +341,15 @@
         </div>
         <p id="app-update-status" class="small-note"><strong>App version:</strong> checking for updates...</p>
         <p class="small-note"><strong>Install Floodwatch:</strong> The same install button works on supported phones and desktop computers. On Android, the Floodwatch icon may appear in your Apps screen/app drawer rather than directly on the Home screen. On a PC using a supported browser such as Chrome or Edge, choose <strong>Install Floodwatch</strong>; the installed app is available from your computer’s apps/start menu and can be pinned or have a desktop shortcut created. The installed app uses the Floodwatch bridge-and-water icon.</p>
-        <p class="small-note"><strong>Reading looks stale?</strong> Open “Check official BOM Bellbrook table” and compare the latest timestamp for station 059122. This lets you see whether BOM itself has not published a newer Bellbrook observation or whether Floodwatch needs refreshing.</p>
+        <p class="small-note"><strong>Reading looks stale?</strong> Open “Check official BOM Bellbrook table” and compare the latest timestamp for station 059122. Compare observation times, not page issue or refresh times. An old reading alone does not identify whether a delay is at the station, in transmission, in publication or in the mirror.</p>
         <p class="small-note">The gauge card is deliberately plain and high-contrast so it can be read fast on a phone in poor weather.</p>
       </div>
     </section>
 
     <footer class="footer-note">
-      <strong>Bellbrook Bridge Automated Floodwatch.</strong> River-height observations: Bureau of Meteorology data via the current OpenDataSoft mirror, station 059122. Deck reference: 2.80 m. All displayed observation times are AEST (UTC+10). Status thresholds are local dashboard thresholds, not a substitute for emergency services advice.
+      <p><strong>Independent Bellbrook Bridge Automated Floodwatch by Julian Minko.</strong> Observations: Bureau of Meteorology, © Commonwealth of Australia, via the OpenDataSoft mirror, station 059122. Floodwatch generates the charts, indicative clearance and local water-level bands. No agency endorsement is implied.</p>
+      <p><a href="https://www.bom.gov.au/fwo/IDN60232/IDN60232.059122.tbl.shtml" target="_blank" rel="noopener">BOM source and terms</a> · <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a> applies to material covered by the source page’s licence, subject to its stated exceptions and supplying organisations’ terms. <a href="about.html#sources-and-limits">Full attribution and limitations</a>.</p>
+      <p>Deck reference: 2.80 m; calculation is reference minus recorded gauge height. All displayed observation times are AEST (UTC+10), one hour behind NSW daylight-saving time. Local bands do not establish official road status.</p>
     </footer>
   </main>
 
@@ -357,7 +360,7 @@
     const DECK = 2.80;
     const WATCH = 2.30;
     const HISTORY_KEY = "bellbrook_history_direct_v2";
-    const APP_BUILD = "2026.09.22.19";
+    const APP_BUILD = "2026.11.08.1";
     const REQUEST_TIMEOUT_MS = 15000;
     const HISTORY_RETENTION_MS = 14 * 24 * 60 * 60 * 1000;
     const RANGE_24H_MS = 24 * 60 * 60 * 1000;
@@ -601,16 +604,16 @@
       const banner = document.getElementById("status-banner");
       banner.classList.remove("state-safe", "state-watch", "state-warn", "state-closed", "state-unavailable");
       if (height >= DECK) {
-        banner.textContent = "DECK CONTACT — WATER AT OR ABOVE DECK";
+        banner.textContent = "RECORDED LEVEL AT OR ABOVE DECK REFERENCE";
         banner.classList.add("state-closed");
       } else if (height >= WATCH) {
-        banner.textContent = "DANGER — WATER NEAR DECK";
+        banner.textContent = "RECORDED LEVEL NEAR DECK REFERENCE";
         banner.classList.add("state-warn");
       } else if (height >= 1.80) {
-        banner.textContent = "WATCH — WATER WITHIN 1 m OF DECK";
+        banner.textContent = "WATCH — RECORDED LEVEL WITHIN 1 m OF REFERENCE";
         banner.classList.add("state-watch");
       } else {
-        banner.textContent = "LOW WATER — CHECK CONDITIONS";
+        banner.textContent = "LOW WATER AT OBSERVATION — CHECK CONDITIONS";
         banner.classList.add("state-safe");
       }
     }
@@ -638,7 +641,7 @@
       document.getElementById("water-level").textContent = bh.toFixed(2) + " m";
       document.getElementById("deck-relative").textContent = (relative >= 0 ? "+" : "") + relative.toFixed(2) + " m";
       document.getElementById("time").textContent = "Latest mirrored observation: " + time.label;
-      document.getElementById("clearance-note").textContent = clearance > 0 ? "Water was below the 2.80 m deck at this observation." : clearance === 0 ? "Water was at the 2.80 m deck at this observation." : "Water was above the 2.80 m deck at this observation.";
+      document.getElementById("clearance-note").textContent = clearance > 0 ? "Recorded gauge height was below the 2.80 m reference. Indicative calculation only." : clearance === 0 ? "Recorded gauge height matched the 2.80 m reference. Indicative calculation only." : "Recorded gauge height exceeded the 2.80 m reference. Indicative calculation only.";
       document.getElementById("water-fill").style.height = fillPct + "%";
       document.getElementById("water-callout").style.top = Math.max(8, Math.min(92, 100 - fillPct)) + "%";
       document.getElementById("water-callout-value").textContent = bh.toFixed(2) + " m";
